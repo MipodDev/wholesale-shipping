@@ -2,17 +2,21 @@ const express = require("express");
 const path = require("path"); // Needed for path handling
 require("dotenv").config();
 const colors = require("colors");
-const { connect, disconnect, ping } = require("./utils/db");
+const { connect, disconnect, ping } = require("./src/utils/db");
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ratesRoute = require("../server/routes/rates.route");
-const customersRoute = require("../server/routes/customers.route");
+const ratesRoute = require("./src/routes/rates.route");
+const customersRoute = require("./src/routes/customers.route");
+const installationRoute = require("./src/routes/installation.route");
 
-const { test, testInstallation } = require("../server/test/test");
+const { test } = require("./src/test/test");
 app.use(express.json());
 
-app.use("/rates", ratesRoute);
-app.use("/customers", customersRoute);
+app.use("/api/rates", ratesRoute);
+app.use("/api/customers", customersRoute);
+app.use("/api/install", installationRoute);
+
+
 app.get("/test", async (req, res) => {
   await test();
   res.send("request received");

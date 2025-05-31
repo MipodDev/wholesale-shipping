@@ -75,7 +75,7 @@ async function createCarrierService(site, carrier_service) {
 async function updateCarrierService(site, carrier_service) {
   const { id, name, callbackUrl, supportsServiceDiscovery, active } =
     carrier_service;
-  if (!id || !name || !callbackUrl || !supportsServiceDiscovery || !active) {
+  if (!id || !name || !callbackUrl ) {
     throw new Error(
       "Missing Input value in Carrier Service Creation:",
       carrier_service

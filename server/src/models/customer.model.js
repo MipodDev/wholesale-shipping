@@ -19,7 +19,10 @@ const customerSchema = new Schema({
   },
   ruleSets: {
     type: Array,
-  }
+  },
+    site: {
+    type: String,
+  },
 });
 
 const Customer = mongoose.model("Customer", customerSchema);

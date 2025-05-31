@@ -4,9 +4,9 @@ const dotenv = require("dotenv");
 dotenv.config();
 const db_username = process.env.DB_USER;
 const db_password = process.env.DB_PASSWORD;
-const database = process.env.DB_COLLECTION;
+const collection = process.env.DB_COLLECTION;
 
-const uri = `mongodb+srv://${db_username}:${db_password}@shopify-integrations.xbkpui0.mongodb.net/${database}?retryWrites=true&w=majority&appName=shopify-integrations`;
+const uri = `mongodb+srv://${db_username}:${db_password}@shopify-integrations.xbkpui0.mongodb.net/${collection}?retryWrites=true&w=majority&appName=shopify-integrations`;
 
 const clientOptions = {
   serverApi: { version: "1", strict: true, deprecationErrors: true },

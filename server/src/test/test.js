@@ -1,91 +1,111 @@
 const { shopifyQl } = require("../api/Shopify.QL");
 const {
-  listCarrierServices,
-  getCarrierService,
-  createCarrierService,
-} = require("../graphql/carrierServices");
-const {
   retreiveCustomerData,
   deleteCustomer,
   customerCleanupQuery,
 } = require("../graphql/customers");
+const { loadStates } = require("../services/state.service");
 const colors = require("colors");
+const SiteData = require("../models/site.model");
+
+// async function test() {
+//   let customer_set = new Set();
+//   let rejected_customers = new Set();
+
+//   const site = "B2B";
+//   const first = 250;
+
+//   let filter = `first: ${first}`;
+//   let last_cursor = null;
+//   let processed = 0;
+
+//   while (true) {
+//     if (last_cursor) {
+//       console.log(`Retreiving next ${first} customers (${processed})`);
+
+//       filter = `first: ${first}, after: "${last_cursor}"`;
+//     } else {
+//       console.log(`Retreiving first ${first} customers...`);
+//     }
+//     const data = await retreiveCustomerData(site, filter);
+
+//     const customers = data.customers.edges;
+//     last_cursor = data.customers.pageInfo.endCursor;
+//     for (let i = 0; i < customers.length; i++) {
+//       const { node } = customers[i];
+//       // console.log(node);
+//       let customer = {
+//         id: node.id,
+//         email: node.defaultEmailAddress
+//           ? node.defaultEmailAddress.emailAddress
+//           : "",
+//         phone: node.defaultPhoneNumber
+//           ? node.defaultPhoneNumber.phoneNumber
+//           : "",
+//         numberOfOrders: node.numberOfOrders,
+//       };
+//       if (!node.defaultEmailAddress || !node.defaultPhoneNumber) {
+//         rejected_customers.add(customer);
+//       } else {
+//         customer_set.add(customer);
+//       }
+//       processed++;
+//     }
+//     if (customers.length < first) {
+//       break;
+//     }
+//   }
+
+//   // const carrierServices = data.carrierServices.edges;
+//   // for (let i = 0; i < carrierServices.length; i++) {
+//   //   console.log(carrierServices[i]);
+//   // }
+//   const posPercent =
+//     (customer_set.size / (customer_set.size + rejected_customers.size)) * 100;
+//   const negPercent =
+//     (rejected_customers.size / (customer_set.size + rejected_customers.size)) *
+//     100;
+//   console.log(`Valid Customers:`, customer_set.size, `(${posPercent}%)`);
+//   console.log(
+//     `Invalid Customers:`,
+//     rejected_customers.size,
+//     `(${negPercent}%)`
+//   );
+// }
+
+// async function test(){
+//   await loadStates();
+// }
+
 async function test() {
-  let customer_set = new Set();
-  let rejected_customers = new Set();
-
-  const site = "B2B";
-  const first = 250;
-
-  let filter = `first: ${first}`;
-  let last_cursor = null;
-  let processed = 0;
-
-  while (true) {
-    if (last_cursor) {
-      console.log(`Retreiving next ${first} customers (${processed})`);
-
-      filter = `first: ${first}, after: "${last_cursor}"`;
-    } else {
-      console.log(`Retreiving first ${first} customers...`);
-    }
-    const data = await retreiveCustomerData(site, filter);
-
-    const customers = data.customers.edges;
-    last_cursor = data.customers.pageInfo.endCursor;
-    for (let i = 0; i < customers.length; i++) {
-      const { node } = customers[i];
-      // console.log(node);
-      let customer = {
-        id: node.id,
-        email: node.defaultEmailAddress
-          ? node.defaultEmailAddress.emailAddress
-          : "",
-        phone: node.defaultPhoneNumber
-          ? node.defaultPhoneNumber.phoneNumber
-          : "",
-        numberOfOrders: node.numberOfOrders,
-      };
-      if (!node.defaultEmailAddress || !node.defaultPhoneNumber) {
-        rejected_customers.add(customer);
-      } else {
-        customer_set.add(customer);
-      }
-      processed++;
-    }
-    if (customers.length < first) {
-      break;
-    }
+  const sites = [
+    {
+      name: "Mi-Pod Wholesale (SBX)",
+      code: "SBX",
+      my_shopify_url: "mipodwholesale-avalara",
+    },
+    {
+      name: "Mi-Pod Wholesale (Production)",
+      code: "B2B",
+      my_shopify_url: "mi-one-com",
+    },
+  ];
+  for(let i = 0; i < sites.length; i++){
+    await SiteData.create(sites[i]);
   }
-
-  // const carrierServices = data.carrierServices.edges;
-  // for (let i = 0; i < carrierServices.length; i++) {
-  //   console.log(carrierServices[i]);
-  // }
-  const posPercent =
-    (customer_set.size / (customer_set.size + rejected_customers.size)) * 100;
-  const negPercent =
-    (rejected_customers.size / (customer_set.size + rejected_customers.size)) *
-    100;
-  console.log(`Valid Customers:`, customer_set.size, `(${posPercent}%)`);
-  console.log(
-    `Invalid Customers:`,
-    rejected_customers.size,
-    `(${negPercent}%)`
-  );
 }
 
-async function testInstallation() {
-  const site = "SBX";
-  const carrier_service = {
-    name: "test carrier service",
-    callbackUrl: "https://4p5zvprf-3000.usw3.devtunnels.ms/rates",
-    supportsServiceDiscovery: true,
-    active: true,
-  };
-  const response = await createCarrierService(site, carrier_service);
-  console.log(response);
-}
+// async function testInstallation() {
+//   const site = "SBX";
+//   const carrier_service = {
+//     name: "test carrier service",
+//     callbackUrl: "https://4p5zvprf-3000.usw3.devtunnels.ms/rates",
+//     supportsServiceDiscovery: true,
+//     active: true,
+//   };
+//   const response = await createCarrierService(site, carrier_service);
+//   console.log(response);
+// }
 
 // async function test() {
 //   const site = "B2B";
@@ -102,7 +122,6 @@ async function testInstallation() {
 //   ];
 //   const date_limit = new Date("2024-01-01");
 //   let processed = 0;
-
 
 //   const first = 250;
 //   let filter = `first: ${first}`;
@@ -200,7 +219,6 @@ async function testInstallation() {
 
 //   console.log(`Total Customers to Delete:`.red.bold, deleteCustomers_set.size, `(${percent_deleted})`);
 
-  
 //   for(let i = 0; i < delete_customers.length; i++){
 //     const {id}=  delete_customers[i];
 //     try {
@@ -212,4 +230,4 @@ async function testInstallation() {
 //   }
 // }
 
-module.exports = { test, testInstallation };
+module.exports = { test };

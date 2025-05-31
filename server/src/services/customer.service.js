@@ -5,11 +5,10 @@ const {
   customerCleanupQuery,
 } = require("../graphql/customers");
 
-async function synchronizeCustomers() {
+async function synchronizeCustomers(site) {
   let customer_set = new Set();
   let rejected_customers = new Set();
 
-  const site = "B2B";
   const first = 250;
 
   let filter = `first: ${first}`;
@@ -40,12 +39,14 @@ async function synchronizeCustomers() {
           ? node.defaultPhoneNumber.phoneNumber
           : "",
         numberOfOrders: node.numberOfOrders,
+        site,
       };
       if (!node.defaultEmailAddress || !node.defaultPhoneNumber) {
         rejected_customers.add(customer);
-      } else {
-        customer_set.add(customer);
       }
+
+      customer_set.add(customer);
+
       processed++;
     }
     if (customers.length < first) {
@@ -53,37 +54,20 @@ async function synchronizeCustomers() {
     }
   }
 
-  // const carrierServices = data.carrierServices.edges;
-  // for (let i = 0; i < carrierServices.length; i++) {
-  //   console.log(carrierServices[i]);
-  // }
-  const posPercent =
-    (customer_set.size / (customer_set.size + rejected_customers.size)) * 100;
-  const negPercent =
-    (rejected_customers.size / (customer_set.size + rejected_customers.size)) *
-    100;
-  console.log(`Valid Customers:`, customer_set.size, `(${posPercent}%)`);
-  console.log(
-    `Invalid Customers:`,
-    rejected_customers.size,
-    `(${negPercent}%)`
-  );
-  for (let customer of Array.from(customer_set)) {
-    const { id, email, phone } = customer;
-    const existing = CustomerData.findOne({ id });
+  console.log(`Processing Approved Customers...`);
+  const update_customers = Array.from(customer_set);
+  for(let i = 0; i < update_customers.length; i++) {
+    const { id, email, phone } = update_customers[i];
+    const existing = await CustomerData.findOne({ id });
     if (existing) {
-      CustomerData.updateOne(existing["_id"], { id, email, phone });
+      existing.email = email;
+      existing.phone = phone;
+      existing.site = site;
+      const saved  = await existing.save();
+      console.log(`(${i + 1}/${update_customers.length}) Updated:`, saved.email)
     } else {
-      CustomerData.create({ id, email, phone });
-    }
-  }
-  for (let customer of Array.from(rejected_customers)) {
-    const { id, email, phone } = customer;
-    const existing = CustomerData.findOne({ id });
-    if (existing) {
-      CustomerData.updateOne(existing["_id"], { id, email, phone });
-    } else {
-      CustomerData.create({ id, email, phone });
+      CustomerData.create({ id, email, phone, site });
+      console.log(`(${i + 1}/${update_customers.length}) Created:`, email);
     }
   }
 }

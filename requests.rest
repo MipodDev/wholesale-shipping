@@ -1,24 +1,119 @@
 ###
-POST http://localhost:3000/rates
+POST http://localhost:3000/api/rates/SBX
 Content-Type: application/json
+
+{
+  "rate": {
+    "origin": {
+      "country": "US",
+      "postal_code": "85008",
+      "province": "AZ",
+      "city": "Phoenix",
+      "name": null,
+      "address1": "4908 E Mcdowell Rd",
+      "address2": "Suite 100",
+      "address3": null,
+      "latitude": 33.4667751,
+      "longitude": -111.9758635,
+      "phone": null,
+      "fax": null,
+      "email": null,
+      "address_type": null,
+      "company_name": "mipodwholesale-avalara"
+    },
+    "destination": {
+      "country": "US",
+      "postal_code": "85008",
+      "province": "AZ",
+      "city": "Phoenix",
+      "name": "Dylan Walters",
+      "address1": "4908 East McDowell Road",
+      "address2": null,
+      "address3": null,
+      "latitude": 33.466806,
+      "longitude": -111.9758276,
+      "phone": "4802524808",
+      "fax": null,
+      "email": null,
+      "address_type": null,
+      "company_name": null
+    },
+    "items": [
+  {
+    "name": "Aloe GrapSe Orion Bar 7500 - Wholesale A / 50mg / 10 Pack",
+    "sku": "53364-10",
+    "quantity": 9,
+    "grams": 850,
+    "price": 8000,
+    "vendor": "Lost Vape",
+    "requires_shipping": true,
+    "taxable": true,
+    "fulfillment_service": "manual",
+    "properties": {},
+    "product_id": 8052175536296,
+    "variant_id": 45793663484072
+  }
+],
+    "currency": "USD",
+    "locale": "en-US"
+  }
+}
+
+###
+#
+# Customers
+#
+###
+POST http://localhost:3000/api/customers/synchronize/SBX
+Content-Type: application/json
+
 
 
 
 ###
-POST http://localhost:3000/customers
+#
+# Installation
+#
+###
+GET http://localhost:3000/api/install/SBX
+Content-Type: application/json
+
+
+###
+PATCH  http://localhost:3000/api/install/SBX
+Content-Type: application/json
+
+{
+    "id": "gid://shopify/DeliveryCarrierService/71360512168",
+    "name": "Mi-One Brands Shipping Rates",
+    "callbackUrl": "https://xx984v62-3000.usw3.devtunnels.ms/api/rates/SBX",
+    "active": true,
+    "supportsServiceDiscovery": true
+}
+
+###
+POST  http://localhost:3000/api/install/SBX
+Content-Type: application/json
+
+  {
+    "name": "Mi-Pod Shipping App",
+    "callbackUrl": "https://xx984v62-3000.usw3.devtunnels.ms/api/rates",
+    "active": true,
+    "supportsServiceDiscovery": true
+  }
+
+
+###
+POST  http://localhost:3000/api/install/check/SBX
 Content-Type: application/json
 
 
 
 
+###
+#
+# Test
+#
 ###
 GET http://localhost:3000/test
 Content-Type: application/json
-
-
-
-
-###
-POST https://4p5zvprf-3000.usw3.devtunnels.ms/rates
-Content-Type: application/json
-
