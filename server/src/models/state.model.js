@@ -2,6 +2,37 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const ListSchema = new Schema({
+  name: {
+    type: String,
+  },
+  category: {
+    type: String,
+  },
+  id: {
+    type: String,
+  },
+});
+
+const RuleSchema = new Schema({
+  id: {
+    type: String,
+  },
+  name: {
+    type: String,
+    unique: true,
+  },
+  range: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
+  targeted_lists: {
+    type: [ListSchema],
+  },
+});
+
 const StateSchema = new Schema({
   name: {
     type: String,
@@ -15,6 +46,9 @@ const StateSchema = new Schema({
   },
   status: {
     type: String,
+  },
+  rules: {
+    type: [RuleSchema],
   },
 });
 

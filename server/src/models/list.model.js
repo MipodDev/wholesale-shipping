@@ -20,6 +20,11 @@ const ProductSchema = new Schema({
 });
 
 const ListSchema = new Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },  
   name: {
     type: String,
     required: true,

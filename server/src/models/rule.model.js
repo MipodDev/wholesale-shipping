@@ -12,8 +12,12 @@ const ListSchema = new Schema({
   },
 });
 
-
 const RuleSchema = new Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   name: {
     type: String,
     required: true,
@@ -21,16 +25,15 @@ const RuleSchema = new Schema({
   },
   range: {
     type: String,
-    required: true,
-
+  },  
+  type: {
+    type: String,
   },
   targeted_areas: {
     type: [String],
-    required: true,
-
   },
-  targeted_lists: [ListSchema],
-  
+  targeted_lists: { type: [ListSchema] },
+
   targeted_skus: {
     type: [String],
   },

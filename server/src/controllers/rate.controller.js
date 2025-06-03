@@ -5,72 +5,60 @@ async function getRates(req_id, site, rate_request) {
   const { origin, destination, items, currency, locale } = rate_request;
   let rates = [];
   let rules_applied = [];
+  let customer_detected = false;
 
+  // Retrieve Customer Details
 
-  // get customer
-  console.log(items);
-
-  const {
-    country,
-    postal_code,
-    province,
-    city,
-    name,
-    address1,
-    address2,
-    address3,
-    latitude,
-    longitude,
-    phone,
-    fax,
-    email,
-    address_type,
-    company_name,
-  } = destination;
-
-const normalizedPhone = phone?.replace(/\D/g, ""); // Strip all non-numeric chars, e.g., "(480) 252-4808" -> "4802524808"
-
-const customer = await customerData.findOne({
-  site,
-  phone: { $regex: `${normalizedPhone}$` }, // Ends with normalized phone
-});
-
-if (customer) {
-  console.log(`Found Customer:`, customer);
-} else {
-  console.log(`Customer not found:`, destination.phone);
-}
-
-  //   {
-  //   country: 'US',
-  //   postal_code: '85008',
-  //   province: 'AZ',
-  //   city: 'Phoenix',
-  //   name: 'Dylan Walters',
-  //   address1: '4908 East McDowell Road',
-  //   address2: null,
-  //   address3: null,
-  //   latitude: null,
-  //   longitude: null,
-  //   phone: '4802524808',
-  //   fax: null,
-  //   email: null,
-  //   address_type: null,
-  //   company_name: null
-  // }
-
-  // get available zones
-
-  // get restrictions/exemptions by customer
+  const customer = await getCustomerDetail(req_id, site, rate_request);
+  if (customer) {
+    customer_detected = true;
+    if (customer.ruleSets.length > 1) {
+      rules_applied = [...customer.ruleSets];
+    }
+  }
+  
   const request_log = {
     req_id,
     site,
+    customer_detected,
+    customer,
     request: rate_request,
     response: { rates, rules_applied },
     rules_applied: [],
   };
 
+  console.log(`${req_id}] Rate Response:`.blue.bold, request_log);
+
   return rates;
+}
+
+async function getCustomerDetail(req_id, site, rate_request) {
+  let customer = {
+    id: null,
+    email: null,
+    phone: null,
+    ruleSets: null,
+    site: null,
+  };
+  const destination = rate_request.destination;
+  const normalizedPhone = destination.phone?.replace(/\D/g, ""); // Strip all non-numeric chars, e.g., "(480) 252-4808" -> "4802524808"
+  try {
+    let data = await customerData.findOne({
+      site,
+      phone: { $regex: `${normalizedPhone}$` }, // Ends with normalized phone
+    });
+    customer.id = data.id;
+    customer.email = data.email;
+    customer.phone = data.phone;
+    customer.ruleSets = data.ruleSets;
+    customer.site = data.site;
+
+    console.log(`[${req_id}] Retreived Customer Record:`.green, customer.email);
+  } catch (error) {
+    console.log(`${req_id}] Error retreiving customer:`.red, error);
+    customer = null;
+  }
+  return customer;
 }
 
 module.exports = { getRates };

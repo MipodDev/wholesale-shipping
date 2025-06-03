@@ -7,6 +7,13 @@ const {
 const { loadStates } = require("../services/state.service");
 const colors = require("colors");
 const SiteData = require("../models/site.model");
+const {
+  processRules,
+} = require("../services/rule.service");
+
+const {
+  processLists,
+} = require("../services/list.service");
 
 // async function test() {
 //   let customer_set = new Set();
@@ -78,21 +85,7 @@ const SiteData = require("../models/site.model");
 // }
 
 async function test() {
-  const sites = [
-    {
-      name: "Mi-Pod Wholesale (SBX)",
-      code: "SBX",
-      my_shopify_url: "mipodwholesale-avalara",
-    },
-    {
-      name: "Mi-Pod Wholesale (Production)",
-      code: "B2B",
-      my_shopify_url: "mi-one-com",
-    },
-  ];
-  for(let i = 0; i < sites.length; i++){
-    await SiteData.create(sites[i]);
-  }
+  await processLists();
 }
 
 // async function testInstallation() {

@@ -8,6 +8,8 @@ const PORT = process.env.PORT || 3000;
 const ratesRoute = require("./src/routes/rates.route");
 const customersRoute = require("./src/routes/customers.route");
 const installationRoute = require("./src/routes/installation.route");
+const listRoute = require("./src/routes/list.route");
+const ruleRoute = require("./src/routes/rule.route");
 
 const { test } = require("./src/test/test");
 app.use(express.json());
@@ -15,6 +17,8 @@ app.use(express.json());
 app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
+app.use("/api/list", listRoute);
+app.use("/api/rule", ruleRoute);
 
 
 app.get("/test", async (req, res) => {

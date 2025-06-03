@@ -2,6 +2,22 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const ruleSchema = new Schema({
+  id: {
+    type: String,
+    required: true,
+  },
+  name: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
+  name: {
+    range: String,
+  },
+});
+
 const customerSchema = new Schema({
   id: {
     type: String,
@@ -18,9 +34,9 @@ const customerSchema = new Schema({
     type: String,
   },
   ruleSets: {
-    type: Array,
+    type: [ruleSchema],
   },
-    site: {
+  site: {
     type: String,
   },
 });

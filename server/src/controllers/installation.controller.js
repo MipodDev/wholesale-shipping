@@ -1,3 +1,5 @@
+const SiteData = require("../models/site.model");
+
 async function saveInstallation(site, carrier_service) {
   const installation = await SiteData.findOne({ code: site });
   installation.gid = carrier_service.id;
