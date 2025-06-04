@@ -2,6 +2,16 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const clusionSchema = new Schema({
+  key: {
+    type: String,
+    enums: ["metafield", "tag"],
+  },
+  value: {
+    type: String,
+  },
+});
+
 const VariantSchema = new Schema({
   id: { type: String, required: true },
   sku: { type: String },
@@ -14,9 +24,8 @@ const ProductSchema = new Schema({
   },
   status: {
     type: String,
-
   },
-  variants: [VariantSchema]
+  variants: [VariantSchema],
 });
 
 const ListSchema = new Schema({
@@ -24,7 +33,7 @@ const ListSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-  },  
+  },
   name: {
     type: String,
     required: true,
@@ -36,7 +45,13 @@ const ListSchema = new Schema({
   targeted_skus: {
     type: [String],
   },
-  products: [ProductSchema]
+  include: {
+    type: [clusionSchema],
+  },
+  exclude: {
+    type: [clusionSchema],
+  },
+  products: [ProductSchema],
 });
 
 const List = mongoose.model("Lists", ListSchema);

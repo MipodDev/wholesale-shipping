@@ -1,5 +1,9 @@
 # Wholesale Shipping App v3
 
+## Important Links
+
+- [Postman Documentation](https://mionebrands.postman.co/workspace/Shopify-Integrations~19c14e98-c0e9-42fb-8313-8f63746b629d/collection/12585826-29556f7e-85bd-4827-9d83-b49d2a5dc847?action=share&creator=12585826)
+
 ## Routes
 
 ### 🚚 Rates (/api/rates)
@@ -115,11 +119,11 @@
 
 ##### Responses
 
-> | http code | content-type              | response                                     |
-> | --------- | ------------------------- | -------------------------------------------- |
-> | `200`     | `application/json`        | `Request Received to synchronize customers.` |
-> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`     |
-> | `405`     | `text/html;charset=utf-8` | None                                         |
+> | http code | content-type              | response                                                  |
+> | --------- | ------------------------- | --------------------------------------------------------- |
+> | `200`     | `application/json`        | `{message: "Request Received to synchronize customers."}` |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`                  |
+> | `405`     | `text/html;charset=utf-8` | None                                                      |
 
 ##### Example cURL
 
@@ -360,11 +364,11 @@
 
 ##### Responses
 
-> | http code | content-type              | response                                 |
-> | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Request Received to Process Rules.`     |
-> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
-> | `405`     | `text/html;charset=utf-8` | None                                     |
+> | http code | content-type              | response                                         |
+> | --------- | ------------------------- | ------------------------------------------------ |
+> | `200`     | `application/json`        | `{message:"Request Received to Process Rules."}` |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`         |
+> | `405`     | `text/html;charset=utf-8` | None                                             |
 
 ##### Example cURL
 
@@ -379,97 +383,190 @@
 #### Create a Rule
 
 <details>
- <summary><code>POST</code> <code><b>/example</b></code> <code>(description)</code></summary>
+ <summary><code>POST</code> <code><b>/</b></code> <code>(Create a Shipping Rule)</code></summary>
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | None | required | object (JSON or YAML) | N/A         |
+> | name  | type | data type             | description                 |
+> | ----- | ---- | --------------------- | --------------------------- |
+> | input | body | object (JSON or YAML) | Input for new Shipping Rule |
+
+**Example Input:**
+
+```json
+{
+  "name": "Example Rule",
+  "range": "state",
+  "type": "Exemption",
+  "states": [
+    {
+      "name": "Arizona",
+      "code": "AZ"
+    }
+  ],
+  "cities": [],
+  "zipCodes": [],
+  "lists": [
+    {
+      "id": "40b99c04-a8f4-4d26-a90c-319bb0d90d0c",
+      "name": "Uncategorized Product List",
+      "category": "Uncategorized"
+    }
+  ],
+  "skus": []
+}
+```
 
 ##### Responses
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Configuration created successfully`     |
+> | `200`     | `application/json`        | `{created_rule}`                         |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
+
+**Example Response:**
+
+```json
+{
+  "id": "f658f268-9aea-4dc8-8a5d-6288cfb1ee75",
+  "name": "Example Rule",
+  "range": "state",
+  "type": "exemption",
+  "targeted_areas": [],
+  "states": [
+    {
+      "name": "Arizona",
+      "code": "AZ",
+      "_id": "683f5fd397dc0083344661d5"
+    }
+  ],
+  "cities": [],
+  "zipCodes": [],
+  "lists": [
+    {
+      "id": "40b99c04-a8f4-4d26-a90c-319bb0d90d0c",
+      "name": "Uncategorized Product List",
+      "category": "Uncategorized",
+      "_id": "683f5fd397dc0083344661d6"
+    }
+  ],
+  "targeted_skus": [],
+  "_id": "683f5fd397dc0083344661d4",
+  "targeted_lists": [],
+  "__v": 0
+}
+```
 
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rule
 > ```
 
 </details>
 
 ---
+
 #### Update a Rule
 
 <details>
- <summary><code>POST</code> <code><b>/example</b></code> <code>(description)</code></summary>
+ <summary><code>PATCH</code> <code><b>/:id</b></code> <code>(Update an Existing Rule)</code></summary>
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | None | required | object (JSON or YAML) | N/A         |
+> | name  | type   | data type             | description                     |
+> | ----- | ------ | --------------------- | ------------------------------- |
+> | id    | params | object id             | id, not \_id (uuid)             |
+> | input | body   | object (JSON or YAML) | Input for updated Shipping Rule |
 
 ##### Responses
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Configuration created successfully`     |
+> | `200`     | `application/json`        | `{updated rule}`     |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
+```json
+{
+  "_id": "683f5fd397dc0083344661d4",
+  "id": "f658f268-9aea-4dc8-8a5d-6288cfb1ee75",
+  "name": "Example Rule test",
+  "range": "state",
+  "type": "exemption",
+  "targeted_areas": [],
+  "states": [
+    {
+      "name": "Arizona",
+      "code": "AZ",
+      "_id": "683f603197dc0083344661de"
+    }
+  ],
+  "cities": [],
+  "zipCodes": [],
+  "lists": [
+    {
+      "id": "40b99c04-a8f4-4d26-a90c-319bb0d90d0c",
+      "name": "Uncategorized Product List",
+      "category": "Uncategorized",
+      "_id": "683f603197dc0083344661df"
+    }
+  ],
+  "targeted_skus": [],
+  "targeted_lists": [],
+  "__v": 1
+}
+```
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/
+>  curl -X PATCH -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rule/:id
 > ```
 
 </details>
 
 ---
+
 #### Delete a Rule
 
 <details>
- <summary><code>POST</code> <code><b>/example</b></code> <code>(description)</code></summary>
+ <summary><code>DELETE</code> <code><b>/:id</b></code> <code>(Deletes a specific rule)</code></summary>
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | None | required | object (JSON or YAML) | N/A         |
+> | name | type   | data type | description         |
+> | ---- | ------ | --------- | ------------------- |
+> | id   | params | object id | id, not \_id (uuid) |
 
 ##### Responses
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Configuration created successfully`     |
+> | `200`     | `application/json`        | `{"message": "Rule deleted"}`            |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/
+>  curl -X DELETE -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rule/:id
 > ```
 
 </details>
 
 ---
+
 #### Get a Rule
 
 <details>
- <summary><code>POST</code> <code><b>/example</b></code> <code>(description)</code></summary>
+ <summary><code>GET</code> <code><b>/:id</b></code> <code>(Retreive a specific rule)</code></summary>
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | None | required | object (JSON or YAML) | N/A         |
+> | name | type   | data type | description         |
+> | ---- | ------ | --------- | ------------------- |
+> | id   | params | object id | id, not \_id (uuid) |
 
 ##### Responses
 
@@ -479,19 +576,51 @@
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
+```json
+{
+  "_id": "683f5fd397dc0083344661d4",
+  "id": "f658f268-9aea-4dc8-8a5d-6288cfb1ee75",
+  "name": "Example Rule",
+  "range": "state",
+  "type": "exemption",
+  "targeted_areas": [],
+  "states": [
+    {
+      "name": "Arizona",
+      "code": "AZ",
+      "_id": "683f5fd397dc0083344661d5"
+    }
+  ],
+  "cities": [],
+  "zipCodes": [],
+  "lists": [
+    {
+      "id": "40b99c04-a8f4-4d26-a90c-319bb0d90d0c",
+      "name": "Uncategorized Product List",
+      "category": "Uncategorized",
+      "_id": "683f5fd397dc0083344661d6"
+    }
+  ],
+  "targeted_skus": [],
+  "targeted_lists": [],
+  "__v": 0
+}
+```
+
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/
+>  curl -X GET -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rule/:id
 > ```
 
 </details>
 
 ---
+
 #### Get all Rules
 
 <details>
- <summary><code>POST</code> <code><b>/example</b></code> <code>(description)</code></summary>
+ <summary><code>GET</code> <code><b>/</b></code> <code>(Retreive all rules)</code></summary>
 
 ##### Parameters
 
@@ -503,43 +632,14 @@
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Configuration created successfully`     |
+> | `200`     | `application/json`        | `[{rules}]`                              |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/
-> ```
-
-</details>
-
----
-
-#### Example Route
-
-<details>
- <summary><code>POST</code> <code><b>/example</b></code> <code>(description)</code></summary>
-
-##### Parameters
-
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | None | required | object (JSON or YAML) | N/A         |
-
-##### Responses
-
-> | http code | content-type              | response                                 |
-> | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Configuration created successfully`     |
-> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
-> | `405`     | `text/html;charset=utf-8` | None                                     |
-
-##### Example cURL
-
-> ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/
+>  curl -X GET -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rule
 > ```
 
 </details>
@@ -605,6 +705,7 @@
 </details>
 
 ---
+
 #### Update a List
 
 <details>
@@ -633,6 +734,7 @@
 </details>
 
 ---
+
 #### Delete a List
 
 <details>
@@ -661,6 +763,7 @@
 </details>
 
 ---
+
 #### Get a List
 
 <details>
@@ -689,6 +792,7 @@
 </details>
 
 ---
+
 #### Get all Lists
 
 <details>

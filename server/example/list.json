@@ -1,0 +1,27 @@
+{
+  "id": "",
+  "name": "",
+  "range": "",
+  "type": "",
+  "states": [
+    {
+      "name": "",
+      "code": ""
+    }
+  ],
+  "cities": [
+    {
+      "code": "",
+      "name": ""
+    }
+  ],
+  "zipCodes": ["85008"],
+  "Lists": [
+    {
+      "id": "",
+      "name": "",
+      "category": ""
+    }
+  ],
+  "skus": []
+}

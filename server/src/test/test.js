@@ -7,13 +7,7 @@ const {
 const { loadStates } = require("../services/state.service");
 const colors = require("colors");
 const SiteData = require("../models/site.model");
-const {
-  processRules,
-} = require("../services/rule.service");
 
-const {
-  processLists,
-} = require("../services/list.service");
 
 // async function test() {
 //   let customer_set = new Set();
@@ -85,7 +79,6 @@ const {
 // }
 
 async function test() {
-  await processLists();
 }
 
 // async function testInstallation() {

@@ -5,7 +5,7 @@ const {
   customerCleanupQuery,
 } = require("../graphql/customers");
 
-async function synchronizeCustomers(site) {
+async function synchronizeCustomers(req_id, site) {
   let customer_set = new Set();
   let rejected_customers = new Set();
 
@@ -17,11 +17,11 @@ async function synchronizeCustomers(site) {
 
   while (true) {
     if (last_cursor) {
-      console.log(`Retreiving next ${first} customers (${processed})`);
+      console.log(`[${req_id}] Retreiving next ${first} customers (${processed})`);
 
       filter = `first: ${first}, after: "${last_cursor}"`;
     } else {
-      console.log(`Retreiving first ${first} customers...`);
+      console.log(`[${req_id}] Retreiving first ${first} customers...`);
     }
     const data = await retreiveCustomerData(site, filter);
 
@@ -54,7 +54,7 @@ async function synchronizeCustomers(site) {
     }
   }
 
-  console.log(`Processing Approved Customers...`);
+  console.log(`[${req_id}] Processing Approved Customers...`);
   const update_customers = Array.from(customer_set);
   for(let i = 0; i < update_customers.length; i++) {
     const { id, email, phone } = update_customers[i];
@@ -64,10 +64,10 @@ async function synchronizeCustomers(site) {
       existing.phone = phone;
       existing.site = site;
       const saved  = await existing.save();
-      console.log(`(${i + 1}/${update_customers.length}) Updated:`, saved.email)
+      console.log(`[${req_id}] (${i + 1}/${update_customers.length}) Updated:`, saved.email)
     } else {
       CustomerData.create({ id, email, phone, site });
-      console.log(`(${i + 1}/${update_customers.length}) Created:`, email);
+      console.log(`[${req_id}] (${i + 1}/${update_customers.length}) Created:`, email);
     }
   }
 }

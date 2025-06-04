@@ -14,4 +14,20 @@ router.post("/process", async (req, res) => {
   })();
 });
 
+router.get("/", async (req, res) => {
+  const req_id = uuidv4();
+});
+router.get("/:id", async (req, res) => {
+  const req_id = uuidv4();
+});
+router.post("/:id", async (req, res) => {
+  const req_id = uuidv4();
+});
+router.patch("/:id", async (req, res) => {
+  const req_id = uuidv4();
+});
+router.delete("/:id", async (req, res) => {
+  const req_id = uuidv4();
+});
+
 module.exports = router;
