@@ -1,5 +1,4 @@
 const RuleData = require("../models/rule.model");
-const colors = require("colors");
 const { v4: uuidv4 } = require("uuid");
 
 async function createRule(req_id, input) {

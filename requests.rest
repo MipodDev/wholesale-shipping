@@ -32,7 +32,7 @@ Content-Type: application/json
       "address3": null,
       "latitude": 33.466806,
       "longitude": -111.9758276,
-      "phone": "4802524808",
+      "phone": "18007689982",
       "fax": null,
       "email": null,
       "address_type": null,
@@ -64,6 +64,7 @@ Content-Type: application/json
 # Customers
 #
 ###
+
 POST http://localhost:3000/api/customers/synchronize/SBX
 Content-Type: application/json
 
@@ -86,7 +87,7 @@ Content-Type: application/json
 {
     "id": "gid://shopify/DeliveryCarrierService/71360512168",
     "name": "Mi-One Brands Shipping Rates",
-    "callbackUrl": "https://xx984v62-3000.usw3.devtunnels.ms/api/rates/SBX",
+    "callbackUrl": "https://4p5zvprf-3000.usw3.devtunnels.ms/api/rates/SBX",
     "active": true,
     "supportsServiceDiscovery": true
 }

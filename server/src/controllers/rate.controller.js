@@ -9,7 +9,7 @@ async function getRates(req_id, site, rate_request) {
   console.log(`\n[${req_id}] Received Rate Request from:`.magenta.bold, site);
 
   const customer = await getCustomerDetail(req_id, site, rate_request);
-  if (customer && customer.rules.length > 0) {
+  if (customer && customer.rules && customer.rules.length > 0) {
     console.log(
       `[${req_id}] Applying Customer Rules:`.blue,
       customer.rules.length
@@ -39,6 +39,14 @@ async function getRates(req_id, site, rate_request) {
 
   const cart_detail = await getCartDetails(req_id, site, rate_request);
 
+  const approval = await getApproval(
+    req_id,
+    site,
+    rules,
+    rate_request,
+    cart_detail
+  );
+
   const services = await getServices(req_id, site, rate_request, cart_detail);
   console.log(
     `[${req_id}] Available Services for Zone:`.green,
@@ -49,12 +57,79 @@ async function getRates(req_id, site, rate_request) {
 
   return rates;
 }
+
+async function getApproval(req_id, site, rules, state, cart_detail) {
+  let approval = {
+    allow: false,
+    exempt: false,
+    reason: null,
+  };
+  console.log(`[${req_id}] Trying approval...`.blue.bold);
+  console.log(`[${req_id}] Rules to process:`.blue, rules.length);
+  for (let i = 0; i < rules.length; i++) {
+    let targeted_area = false;
+
+    const { name, range, type, lists, states, cities, zipCodes, skus } =
+      rules[i];
+    console.log(`[${req_id}] Validating:`.blue, name);
+    switch (range) {
+      case "Customer":
+        console.log(`[${req_id}] Applying customer rule...`.yellow);
+        targeted_area = true;
+        break;
+      case "State":
+        console.log(`[${req_id}] Applying state rule...`.yellow);
+
+        targeted_area = true;
+        break;
+      case "City":
+        if (state.city) {
+          console.log(`[${req_id}] Applying city rule...`.yellow);
+
+          console.log(state.city);
+        }
+        break;
+      case "Zip Code":
+        if (state.zipCode) {
+          console.log(`[${req_id}] Applying zip code rule...`.yellow);
+
+          console.log(state.zipCode);
+        }
+
+        break;
+    }
+    if (!targeted_area) {
+      console.log(`[${req_id}] Not Applying rule - Not within Range`.red);
+      continue;
+    } else {
+      console.log(`[${req_id}] Applying ${type}:`.green, name);
+    }
+    // Check items
+    let items_flagged = false;
+
+    const { unique_items } = cart_detail;
+    for (let i = 0; i < unique_items.length; i++) {
+      if (skus && skus.includes(unique_items[i])) {
+        items_flagged = true;
+      }
+    }
+    if (!items_flagged) {
+      console.log(`Items are not flagged.`.yellow);
+      continue;
+    } else {
+      console.log(`Items are flagged, conduct ${type}`.green.bold);
+    }
+  }
+
+  return approval;
+}
+
 async function getCustomerDetail(req_id, site, rate_request) {
   let customer = {
     id: null,
     email: null,
     phone: null,
-    ruleSets: null,
+    rules: null,
     site: null,
   };
   const destination = rate_request.destination;
@@ -72,7 +147,7 @@ async function getCustomerDetail(req_id, site, rate_request) {
     customer.id = data.id;
     customer.email = data.email;
     customer.phone = data.phone;
-    customer.rules = data.ruleSets;
+    customer.rules = data.rules;
     customer.site = data.site;
 
     console.log(
@@ -85,11 +160,14 @@ async function getCustomerDetail(req_id, site, rate_request) {
   }
   return customer;
 }
+
 async function getServices(req_id, site, rate_request, cart_detail) {
   const { destination, items } = rate_request;
   const state_code = destination.province;
   const zip_code = destination.postal_code?.substring(0, 5);
   let available_services = [];
+  console.log(`[${req_id}] Retrieving Services in:`.blue, state_code);
+
   const services = await ServiceData.find({
     provinces: state_code,
   });
@@ -144,7 +222,9 @@ async function getServices(req_id, site, rate_request, cart_detail) {
       ) {
         console.log(
           `[${req_id}] Free Shipping Applied:`.green,
-          `${cart_detail.order_total} / ${free_shipping_threshold}`
+          `$${(cart_detail.order_total / 100).toFixed(2)} >= $${(
+            free_shipping_threshold / 100
+          ).toFixed(2)}`
         );
 
         service_price = 0;
@@ -161,12 +241,25 @@ async function getServices(req_id, site, rate_request, cart_detail) {
 
       if (for_zips.length > 0) {
         if (for_zips.includes(zip_code)) {
+          console.log(
+            `[${req_id}] Adding Service:`.green,
+            carrier_service.service_name
+          );
+
           available_services.push(carrier_service);
-        }else{
-          console.log(`[${req_id}] Destination out of Zip Code Coverage:`.red, `${zip_code}`);
+        } else {
+          console.log(
+            `[${req_id}] Destination out of Zip Code Coverage:`.red,
+            `${zip_code}`
+          );
           continue;
         }
       } else {
+        console.log(
+          `[${req_id}] Adding Service:`.green,
+          carrier_service.service_name
+        );
+
         available_services.push(carrier_service);
       }
     }
@@ -174,6 +267,7 @@ async function getServices(req_id, site, rate_request, cart_detail) {
 
   return available_services;
 }
+
 async function getCartDetails(req_id, site, rate_request) {
   const { items } = rate_request;
   let item_set = new Set();
@@ -198,6 +292,7 @@ async function getCartDetails(req_id, site, rate_request) {
 
   return { unique_items, order_total };
 }
+
 async function getStateDetail(req_id, site, rate_request) {
   const { destination } = rate_request;
   console.log(`[${req_id}] Searching for State detail...`.blue);
@@ -226,8 +321,10 @@ async function getStateDetail(req_id, site, rate_request) {
   }
   return detail;
 }
+
 async function composeRates(req_id, site, rate_request, services) {
   console.log(`[${req_id}] Rates:`.magenta.bold, services);
   return services;
 }
+
 module.exports = { getRates };

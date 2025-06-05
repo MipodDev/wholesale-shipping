@@ -2,21 +2,40 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const ruleSchema = new Schema({
+const ListSchema = new Schema({
   id: {
     type: String,
     required: true,
   },
   name: {
     type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+  },
+});
+
+const RuleSchema = new Schema({
+  id: {
+    type: String,
+  },
+  name: {
+    type: String,
+    unique: true,
+  },
+  range: {
+    type: String,
   },
   type: {
     type: String,
   },
-  name: {
-    range: String,
+  lists: {
+    type: [ListSchema],
   },
+
 });
+
 
 const customerSchema = new Schema({
   id: {
@@ -33,8 +52,8 @@ const customerSchema = new Schema({
   customerNumber: {
     type: String,
   },
-  ruleSets: {
-    type: [ruleSchema],
+  rules: {
+    type: [RuleSchema],
   },
   site: {
     type: String,

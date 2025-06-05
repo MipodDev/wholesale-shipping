@@ -14,6 +14,15 @@ const ListSchema = new Schema({
   },
 });
 
+const CitySchema = new Schema({
+  code: {
+    type: String,
+  },
+  name: {
+    type: String,
+  },
+});
+
 const RuleSchema = new Schema({
   id: {
     type: String,
@@ -27,6 +36,15 @@ const RuleSchema = new Schema({
   },
   type: {
     type: String,
+  },
+  cities: {
+    type: [CitySchema],
+  },
+  zipCodes: {
+    type: [String],
+  },
+  lists: {
+    type: [ListSchema],
   },
   targeted_lists: {
     type: [ListSchema],

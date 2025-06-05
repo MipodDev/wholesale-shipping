@@ -47,12 +47,12 @@ const RuleSchema = new Schema({
   },
   range: {
     type: String,
-    enum: ["state", "city", "zip code"],
+    enum: ["State", "City", "Zip Code", "Customer"],
     required: true,
   },
   type: {
     type: String,
-    enum: ["ban", "exemption", "registry"],
+    enum: ["Ban", "Exemption", "Registry"],
   },
   targeted_areas: {
     type: [String],
@@ -71,9 +71,11 @@ const RuleSchema = new Schema({
   },
   targeted_lists: {
     type: [ListSchema],
-    required: true,
   },
   targeted_skus: {
+    type: [String],
+  },
+    skus: {
     type: [String],
   },
 });

@@ -15,7 +15,7 @@ router.post("/:site", async (req, res) => {
   } catch (error) {
     console.log(`Error Processing Rate Request:`, error);
   }
-  res.status(200).send(rateResponse);
+  res.status(200).send({rates: rateResponse});
 });
 
 module.exports = router;
