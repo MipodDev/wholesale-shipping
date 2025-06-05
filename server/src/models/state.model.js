@@ -61,6 +61,23 @@ const ZipCodeSchema = new Schema({
   },
 });
 
+const ServiceSchema = new Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  name: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+
+});
+
 const StateSchema = new Schema({
   name: {
     type: String,
@@ -80,6 +97,9 @@ const StateSchema = new Schema({
   },
   zipCodes: {
     type: [ZipCodeSchema],
+  },
+  services: {
+    type: [ServiceSchema],
   },
 });
 

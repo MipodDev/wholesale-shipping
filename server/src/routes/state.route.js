@@ -7,6 +7,7 @@ const {
   getStateByCode,
   getAllStates,
 } = require("../controllers/state.controller");
+const { synchronizeStates, synchronizeState } = require("../services/state.service");
 
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
@@ -63,5 +64,28 @@ router.delete("/:stateCode", async (req, res) => {
     res.status(405).send(error);
   }
 });
+
+router.post("/synchronize", async (req, res) => {
+    const req_id = uuidv4();
+      try {
+    const response = await synchronizeStates(req_id);
+    res.status(200).send(response);
+  } catch (error) {
+    res.status(405).send(error);
+  }
+
+})
+router.post("/synchronize/:stateCode", async (req, res) => {
+      const req_id = uuidv4();
+
+    const stateCode = req.params.stateCode;
+      try {
+    const response = await synchronizeState(req_id, stateCode);
+    res.status(200).send(response);
+  } catch (error) {
+    res.status(405).send(error);
+  }
+
+})
 
 module.exports = router;
