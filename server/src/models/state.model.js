@@ -51,6 +51,16 @@ const RuleSchema = new Schema({
   },
 });
 
+const ZipCodeSchema = new Schema({
+  code: {
+    unique: true,
+    type: String,
+  },
+  county: {
+    type: String,
+  },
+});
+
 const StateSchema = new Schema({
   name: {
     type: String,
@@ -67,6 +77,9 @@ const StateSchema = new Schema({
   },
   rules: {
     type: [RuleSchema],
+  },
+  zipCodes: {
+    type: [ZipCodeSchema],
   },
 });
 

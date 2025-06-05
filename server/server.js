@@ -10,6 +10,7 @@ const customersRoute = require("./src/routes/customers.route");
 const installationRoute = require("./src/routes/installation.route");
 const listRoute = require("./src/routes/list.route");
 const ruleRoute = require("./src/routes/rule.route");
+const stateRoute = require("./src/routes/state.route");
 
 const { test } = require("./src/test/test");
 app.use(express.json());
@@ -19,6 +20,7 @@ app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
 app.use("/api/list", listRoute);
 app.use("/api/rule", ruleRoute);
+app.use("/api/state", stateRoute);
 
 
 app.get("/test", async (req, res) => {
