@@ -145,35 +145,55 @@ async function updateRule(req_id, rule_id, input) {
 }
 
 async function syncRules(req_id) {
+  console.log(`Synchronizing Rules...`.blue.bold);
+  let results = [];
   const rules = await RuleData.find();
-  console.log(rules);
+  console.log(`Rules found:`, rules.length);
   for (let i = 0; i < rules.length; i++) {
-    let xRule = rules[i];
-    let rule = await RuleData.findOne({ id: rules[i].id });
-
-    console.log(`States:`, states.length);
-
-    for (let state_code of states) {
-      await syncRuleToState(req_id, state_code, rule);
-    }
-
-    console.log(`Lists:`, lists.length);
-    // for (let state_code of states) {
-    // }
-    console.log(`Skus:`, skus.length);
-    // for (let state_code of states) {
-    // }
-    if (xRule !== rule) {
-      console.log(`Updates made to rule:`, rule.name);
-    } else {
-      console.log(`No Updates made to rule:`, rule.name);
-    }
+    const result = await synchronizeRule(req_id, rules[i].id);
+    results.push(result);
   }
+  return results;
 }
 
-async function syncRuleToState(req_id, stateCode, rule) {
-  const state = await StateData.findOne({ code: state_code });
-  const {id, name, range, type, cities, zipCodes, lists} = rule;
+async function synchronizeRule(req_id, rule_id) {
+  let result = {
+    rule_id,
+    name: null,
+    updated: false,
+  };
+  const rule = await RuleData.findOne({ id: rule_id });
+  console.log(`Synchronizing:`, rule.name);
+  const xRule = rule;
+  const {
+    id,
+    name,
+    range,
+    type,
+    targeted_areas,
+    states,
+    cities,
+    zipCodes,
+    targeted_lists,
+    targeted_skus,
+    skus,
+  } = rule;
+  if (rule.skus !== targeted_skus) {
+    rule.skus = targeted_skus;
+  }
+  if (rule.states !== targeted_areas) {
+    rule.states = targeted_areas;
+  }
+  if (rule.lists !== targeted_lists) {
+    rule.lists = targeted_lists;
+  }
+  if (xRule !== rule) {
+    const saved = await rule.save();
+    console.log(`Updated Rule!`.green);
+    result.updated = true;
+  }
+
+  return result;
 }
 
 module.exports = {
