@@ -2,6 +2,19 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const ZipCodeSchema = new Schema({
+  stateCode: {
+    type: String,
+  },
+  code: {
+    unique: true,
+    type: String,
+  },
+  county: {
+    type: String,
+  },
+});
+
 const serviceSchema = new Schema({
   id: {
     type: String,
@@ -39,6 +52,9 @@ const serviceSchema = new Schema({
   },
   for_zips: {
     type: [String],
+  },
+  zipCodes: {
+    type: [ZipCodeSchema],
   },
   mapped_carrier:{
     type: String,
