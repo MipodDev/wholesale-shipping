@@ -4,62 +4,51 @@ const StateData = require("../models/state.model");
 const ServiceData = require("../models/service.model");
 
 async function getRates(req_id, site, rate_request) {
-  const { origin, destination, items, currency, locale } = rate_request;
   let rates = [];
-  let rules_applied = [];
-  let customer_detected = false;
-
-  // Retrieve Customer Details
+  let rules = [];
+  console.log(`\n[${req_id}] Received Rate Request from:`.magenta.bold, site);
 
   const customer = await getCustomerDetail(req_id, site, rate_request);
-  if (customer) {
-    customer_detected = true;
-    if (customer.ruleSets.length > 1) {
-      rules_applied = [...customer.ruleSets];
-    }
-  }
-  const destinationDetail = await getDestinationDetail(
-    req_id,
-    site,
-    destination
-  );
-  if (!destinationDetail) {
-    throw new Error("Destination not mapped");
+  if (customer && customer.rules.length > 0) {
+    console.log(
+      `[${req_id}] Applying Customer Rules:`.blue,
+      customer.rules.length
+    );
+    rules = [...customer.rules];
   } else {
-    if (destinationDetail.rules.length > 0) {
-      rules_applied = [...destinationDetail.rules];
-      console.log(destinationDetail.rules);
+    console.log(`[${req_id}] No Customer Rules to Apply.`.yellow);
+  }
+
+  const state = await getStateDetail(req_id, site, rate_request);
+  if (!state || state.status !== "enabled") {
+    console.log(`[${req_id}] State Status:`.red, state.status);
+    rules.push({
+      type: "State Status",
+      range: "State",
+    });
+    return [];
+  } else {
+    console.log(`[${req_id}] State Status:`.green, state.status);
+    if (state.rules > 0) {
+      console.log(`[${req_id}] Applying State Rules:`.blue, state.rules.length);
+      rules = [...state.rules];
+    } else {
+      console.log(`[${req_id}] No State Rules to Apply.`.yellow);
     }
   }
 
-  const approval = await getApproval(
-    req_id,
-    site,
-    rules_applied,
-    destinationDetail,
-    items
+  const cart_detail = await getCartDetails(req_id, site, rate_request);
+
+  const services = await getServices(req_id, site, rate_request, cart_detail);
+  console.log(
+    `[${req_id}] Available Services for Zone:`.green,
+    services.length
   );
 
-  if (approval) {
-    const services = await getServices(req_id, destinationDetail);
-  }
-
-  const request_log = {
-    req_id,
-    site,
-    customer_detected,
-    customer,
-    destinationDetail,
-    // request: rate_request,
-    rates,
-    rules_applied,
-  };
-
-  console.log(`${req_id}] Rate Response:`.blue.bold, request_log);
+  rates = await composeRates(req_id, site, rate_request, services);
 
   return rates;
 }
-
 async function getCustomerDetail(req_id, site, rate_request) {
   let customer = {
     id: null,
@@ -70,6 +59,11 @@ async function getCustomerDetail(req_id, site, rate_request) {
   };
   const destination = rate_request.destination;
   const normalizedPhone = destination.phone?.replace(/\D/g, ""); // Strip all non-numeric chars, e.g., "(480) 252-4808" -> "4802524808"
+  console.log(
+    `[${req_id}] Searching for Customer Record:`.blue,
+    normalizedPhone
+  );
+
   try {
     let data = await CustomerData.findOne({
       site,
@@ -78,19 +72,135 @@ async function getCustomerDetail(req_id, site, rate_request) {
     customer.id = data.id;
     customer.email = data.email;
     customer.phone = data.phone;
-    customer.ruleSets = data.ruleSets;
+    customer.rules = data.ruleSets;
     customer.site = data.site;
 
-    console.log(`[${req_id}] Retreived Customer Record:`.green, customer.email);
+    console.log(
+      `[${req_id}] Retreived Customer Record:`.green.bold,
+      customer.email
+    );
   } catch (error) {
     console.log(`${req_id}] Error retreiving customer:`.red, error);
     customer = null;
   }
   return customer;
 }
+async function getServices(req_id, site, rate_request, cart_detail) {
+  const { destination, items } = rate_request;
+  const state_code = destination.province;
+  const zip_code = destination.postal_code?.substring(0, 5);
+  let available_services = [];
+  const services = await ServiceData.find({
+    provinces: state_code,
+  });
+  if (services.length === 0) {
+    throw new Error("No services assigned to this destination");
+  } else {
+    for (let i = 0; i < services.length; i++) {
+      const {
+        id,
+        name,
+        description,
+        minimum_order_value,
+        price,
+        free_shipping_threshold,
+        per_box_value_set,
+        service_name,
+        service_code,
+        for_zips,
+      } = services[i];
+      console.log(
+        `[${req_id}] (${i + 1}) Processing:`.yellow,
+        `${name} (${description})`
+      );
 
-async function getDestinationDetail(req_id, site, destination) {
-  console.log(`[${req_id}] Searching for Destination detail for...`);
+      let box_multiplier = 1;
+      if ((per_box_value_set !== null) & (per_box_value_set !== "")) {
+        box_multiplier = Math.ceil(cart_detail.order_total / per_box_value_set);
+        console.log(`[${req_id}] Box Multiplier set:`.yellow, box_multiplier);
+      } else {
+        console.log(`[${req_id}] Box Multiplier not needed...`.yellow);
+      }
+
+      if (minimum_order_value > cart_detail.order_total) {
+        console.log(
+          `[${req_id}] Order Total does not meet MOV:`.red,
+          `Cart: $${(cart_detail.order_total / 100).toFixed(2)} | MOV: $${(
+            minimum_order_value / 100
+          ).toFixed(2)}`
+        );
+
+        continue;
+      }
+      let service_price = box_multiplier * price;
+      console.log(
+        `[${req_id}] Set Price:`.yellow,
+        `$${(service_price / 100).toFixed(2)}`
+      );
+
+      if (
+        free_shipping_threshold > 0 &&
+        cart_detail.order_total >= free_shipping_threshold
+      ) {
+        console.log(
+          `[${req_id}] Free Shipping Applied:`.green,
+          `${cart_detail.order_total} / ${free_shipping_threshold}`
+        );
+
+        service_price = 0;
+      } else {
+        console.log(`[${req_id}] Not elligible for free shipping...`.yellow);
+      }
+
+      let carrier_service = {
+        service_name,
+        service_code,
+        total_price: `${service_price}`,
+        currency: "USD",
+      };
+
+      if (for_zips.length > 0) {
+        if (for_zips.includes(zip_code)) {
+          available_services.push(carrier_service);
+        }else{
+          console.log(`[${req_id}] Destination out of Zip Code Coverage:`.red, `${zip_code}`);
+          continue;
+        }
+      } else {
+        available_services.push(carrier_service);
+      }
+    }
+  }
+
+  return available_services;
+}
+async function getCartDetails(req_id, site, rate_request) {
+  const { items } = rate_request;
+  let item_set = new Set();
+
+  let order_total = 0;
+  console.log(`[${req_id}] Summarizing ${items.length} items...`.blue);
+
+  for (let i = 0; i < items.length; i++) {
+    const { name, sku, quantity, price } = items[i];
+    let line_total = quantity * price;
+    // console.log(`[${req_id}] (${sku}) ${name}`.blue);
+    // const cash_line_total = (line_total / 100).toFixed(2);
+    // console.log(`[${req_id}] ${quantity} * ${price} = $${cash_line_total}`.blue);
+    order_total = +line_total;
+    item_set.add(sku);
+  }
+  const unique_items = Array.from(item_set);
+  const cash_total = (order_total / 100).toFixed(2);
+
+  console.log(`[${req_id}] Order Total:`.green, `$${cash_total}`);
+  console.log(`[${req_id}] Unique Items Ordered:`.green, unique_items.length);
+
+  return { unique_items, order_total };
+}
+async function getStateDetail(req_id, site, rate_request) {
+  const { destination } = rate_request;
+  console.log(`[${req_id}] Searching for State detail...`.blue);
   let detail = {
     name: null,
     code: null,
@@ -109,52 +219,15 @@ async function getDestinationDetail(req_id, site, destination) {
     detail.rules = state.rules;
     detail.city = destination.city;
     detail.zipCode = destination.postal_code;
-    console.log(`[${req_id}] Retreived State:`, state.name);
+    console.log(`[${req_id}] Retreived State:`.green, state.name);
   } catch (error) {
     console.log(`Error finding destination detail:`, error);
     detail = null;
   }
   return detail;
 }
-
-async function getApproval(
-  req_id,
-  site,
-  rules_applied,
-  destinationDetail,
-  items
-) {
-  console.log(`[${req_id}] Getting Approval...`.yellow);
-  let approval = {
-    status: true,
-    reason: "none",
-  };
-  for (let rule of rules_applied) {
-    let target_location = false;
-
-    const { name, range, type, targeted_lists } = rule;
-    console.log(`- Processing Rule:`, name);
-    console.log(`- Rule Type:`, `${type} (${range})`);
-    switch (range) {
-      case "State":
-        target_location = true;
-        break;
-      case "City":
-
-        break;
-      case "Zip Code":
-        break;
-      case "Customer":
-        break;
-    }
-    if(target_location){
-      console.log(`- Location is targeted!`);
-    }
-  }
-
-  return approval;
+async function composeRates(req_id, site, rate_request, services) {
+  console.log(`[${req_id}] Rates:`.magenta.bold, services);
+  return services;
 }
-
-async function getServices(req_id, destinationDetail) {}
-
 module.exports = { getRates };
