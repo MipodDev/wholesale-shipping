@@ -32,6 +32,7 @@ router.get("/", async (req, res) => {
     res.status(405).send(error);
   }
 });
+
 router.get("/:id", async (req, res) => {
   const req_id = uuidv4();
   const object_id = req.params.id;
@@ -65,6 +66,7 @@ router.patch("/:id", async (req, res) => {
     res.status(405).send(error);
   }
 });
+
 router.delete("/:id", async (req, res) => {
   const req_id = uuidv4();
   const object_id = req.params.id;
