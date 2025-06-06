@@ -425,20 +425,20 @@
 
 #### Shipping Rule Fields:
 
-| Field          | Type | Description                           | Example                                |
-| -------------- | ---- | ------------------------------------- | -------------------------------------- |
-| id             | guid | unique identifier                     | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| name           | guid | Shipping Rule Name                    | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| range          | guid | Range of Rule                         | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| type           | guid | Type of Rule                          | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| targeted_areas | guid | States or Provinces (dep)             | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| states         | guid | States affected by Rule               | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| cities         | guid | Cities affected by Rule               | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| zipCodes       | guid | Zip Codes affected by Rule            | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| lists          | guid | Product Lists included in Rule        | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| targeted_lists | guid | Product List s included in Rule (dep) | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| targeted_skus  | guid | Unique Skus from Product Lists (dep)  | `3adacae2-e302-4811-8f3c-39acc16b0035` |
-| skus           | guid | Unique Skus from Product Lists        | `3adacae2-e302-4811-8f3c-39acc16b0035` |
+| Field          | Type   | Description                          | Example                                                                                    |
+| -------------- | ------ | ------------------------------------ | ------------------------------------------------------------------------------------------ |
+| id             | guid   | unique identifier                    | `3adacae2-e302-4811-8f3c-39acc16b0035`                                                     |
+| name           | string | Shipping Rule Name                   | `Arizona Registry`                                                                         |
+| range          | string | Range of Rule                        | `State`                                                                                    |
+| type           | string | Type of Rule                         | `Registry`                                                                                 |
+| targeted_areas | string | States or Provinces (dep)            | `["AZ"]`                                                                                   |
+| states         | guid   | States affected by Rule              | `[{name:"Arizona", code:"AZ"}]`                                                            |
+| cities         | guid   | Cities affected by Rule              | `[{code: "AZ",name:"Phoenix"}]` (Only necesarry if Range is City)                          |
+| zipCodes       | guid   | Zip Codes affected by Rule           | `[{stateCode:"AZ","code:"85008",county:"Maricopa"}]` (Only necessary if Range is Zip Code) |
+| lists          | guid   | Product Lists included in Rule       | `[{id, name, category}]`                                                                   |
+| targeted_lists | guid   | Product Lists included in Rule (dep) | `[{id, name, category}]`                                                                   |
+| targeted_skus  | guid   | Unique Skus from Product Lists (dep) | `["skus"...]`                                                                              |
+| skus           | guid   | Unique Skus from Product Lists       | `["skus"...]`                                                                              |
 
 ### 🚚 Services (WIP)
 
@@ -646,6 +646,7 @@
 | include       | [{clusion}]  | Inclusion Rules                   | `[{key:"category", value:"E-Liquid"},{key:"category", value:"E-Liquid"}]` |
 | exclude       | [{clusion}]  | Exclusion Rules                   | `[{ket:"tags", value:"ns"}]`                                              |
 | products      | [{products}] | Shopify Products included in Rule | `[{id, title, status, variants: [{id, sku}]}]`                            |
+
 ---
 
 ### 📃 Zip Codes (WIP)
@@ -1212,4 +1213,3 @@
 </details>
 
 ---
-
