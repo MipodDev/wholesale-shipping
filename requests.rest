@@ -40,8 +40,8 @@ Content-Type: application/json
     },
     "items": [
   {
-    "name": "Aloe GrapSe Orion Bar 7500 - Wholesale A / 50mg / 10 Pack",
-    "sku": "58430-10",
+    "name": "Aloe Grape Orion Bar 7500 - Wholesale A / 50mg / 10 Pack",
+    "sku": "58213-5",
     "quantity": 9,
     "grams": 850,
     "price": 8000,
@@ -110,6 +110,11 @@ Content-Type: application/json
 
 
 ###
+POST  http://localhost:3000/api/install/synchronize/B2B
+Content-Type: application/json
+
+
+###
 #
 # Rules
 #
@@ -117,18 +122,18 @@ Content-Type: application/json
 
 
 ###
-GET http://localhost:3000/api/rule
+GET http://localhost:3000/api/rules
 Content-Type: application/json
 
 
 
 ###
-GET http://localhost:3000/api/rule/f658f268-9aea-4dc8-8a5d-6288cfb1ee75
+GET http://localhost:3000/api/rules/f658f268-9aea-4dc8-8a5d-6288cfb1ee75
 Content-Type: application/json
 
 
 ###
-POST http://localhost:3000/api/rule
+POST http://localhost:3000/api/rules
 Content-Type: application/json
 
 {
@@ -153,7 +158,7 @@ Content-Type: application/json
   "skus": []
 }
 ###
-PATCH http://localhost:3000/api/rule/f658f268-9aea-4dc8-8a5d-6288cfb1ee75
+PATCH http://localhost:3000/api/rules/f658f268-9aea-4dc8-8a5d-6288cfb1ee75
 Content-Type: application/json
 
 {
@@ -180,7 +185,7 @@ Content-Type: application/json
 
 ###
 
-DELETE http://localhost:3000/api/rule/0b8ef2da-9b5a-4a67-ba28-ee92385c5f64
+DELETE http://localhost:3000/api/rules/0b8ef2da-9b5a-4a67-ba28-ee92385c5f64
 Content-Type: application/json
 
 ###
@@ -191,7 +196,7 @@ Content-Type: application/json
 
 
 ###
-POST http://localhost:3000/api/state/synchronize
+POST http://localhost:3000/api/states/synchronize
 Content-Type: application/json
 
 
@@ -214,6 +219,27 @@ Content-Type: application/json
 
 ###
 
+GET http://localhost:3000/api/lists
+Content-Type: application/json
+
+###
+
+POST http://localhost:3000/api/rules/synchronize
+Content-Type: application/json
+
+
+###
+
+POST http://localhost:3000/api/lists/synchronize
+Content-Type: application/json
+
+
+
+
+###
+
+POST http://localhost:3000/api/lists/synchronize/fc252a31-1365-4e67-83ab-9c8f33320ca4
+Content-Type: application/json
 
 
 ###

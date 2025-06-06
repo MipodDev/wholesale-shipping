@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const colors = require("colors");
 const { v4: uuidv4 } = require("uuid");
-const { processRules } = require("../services/rule.service");
 const {
   createRule,
   updateRule,
@@ -10,18 +9,10 @@ const {
   getRuleById,
   getAllRules,
 } = require("../controllers/rule.controller");
-
-router.post("/process", async (req, res) => {
-  res.send({ message: "Request Received to Process Rules." });
-  const req_id = uuidv4();
-  (async () => {
-    try {
-      await processRules(req_id);
-    } catch (error) {
-      console.error(error);
-    }
-  })();
-});
+const {
+  synchronizeAllRules,
+  synchronizeOneRule,
+} = require("../services/rule.service");
 
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
@@ -79,4 +70,30 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.post("/synchronize", async (req, res) => {
+  const req_id = uuidv4();
+  try {
+    const response = await synchronizeAllRules(req_id);
+    res.status(200).send(response);
+  } catch (error) {
+    res.status(405).send(error);
+  }
+});
+
+router.post("/synchronize/:id", async (req, res) => {
+  const req_id = uuidv4();
+  const list_id = req.params.id;
+  try {
+    const response = await synchronizeOneRule(req_id, list_id);
+    let message = null;
+    if (response) {
+      message = "Rule was updated succesfully";
+    } else {
+      message = "No changes were made";
+    }
+    res.status(200).send({message});
+  } catch (error) {
+    res.status(405).send(error);
+  }
+});
 module.exports = router;
