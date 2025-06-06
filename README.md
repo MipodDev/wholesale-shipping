@@ -924,7 +924,7 @@
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `[{state},{state}]`     |
+> | `200`     | `application/json`        | `[{state},{state}]`                      |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -953,7 +953,7 @@
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{state}`     |
+> | `200`     | `application/json`        | `{state}`                                |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -986,7 +986,7 @@
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{state}`     |
+> | `200`     | `application/json`        | `{state}`                                |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -1007,15 +1007,15 @@
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | stateCode | required | string | N/A         |
+> | name      | type     | data type | description |
+> | --------- | -------- | --------- | ----------- |
+> | stateCode | required | string    | N/A         |
 
 ##### Responses
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{updates: [], state: {}}`     |
+> | `200`     | `application/json`        | `{updates: [], state: {}}`               |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -1036,15 +1036,15 @@
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | stateCode | required | string | N/A         |
+> | name      | type     | data type | description |
+> | --------- | -------- | --------- | ----------- |
+> | stateCode | required | string    | N/A         |
 
 ##### Responses
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `[{ message: "State deleted" }]`     |
+> | `200`     | `application/json`        | `[{ message: "State deleted" }]`         |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -1057,6 +1057,7 @@
 </details>
 
 ---
+
 #### Synchronize All States
 
 <details>
@@ -1072,7 +1073,7 @@
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `[results]`     |
+> | `200`     | `application/json`        | `[results]`                              |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -1085,6 +1086,7 @@
 </details>
 
 ---
+
 #### Delete a State
 
 <details>
@@ -1092,15 +1094,15 @@
 
 ##### Parameters
 
-> | name | type     | data type             | description |
-> | ---- | -------- | --------------------- | ----------- |
-> | stateCode | required | string | N/A         |
+> | name      | type     | data type | description |
+> | --------- | -------- | --------- | ----------- |
+> | stateCode | required | string    | N/A         |
 
 ##### Responses
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{ results }`     |
+> | `200`     | `application/json`        | `{ results }`                            |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
@@ -1129,16 +1131,46 @@
 
 ##### Responses
 
-> | http code | content-type              | response                                 |
-> | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{ message: `Request Received to Synchronize Products on ${site}` }`     |
-> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
-> | `405`     | `text/html;charset=utf-8` | None                                     |
+> | http code | content-type              | response                                                             |
+> | --------- | ------------------------- | -------------------------------------------------------------------- |
+> | `200`     | `application/json`        | `{ message: `Request Received to Synchronize Products on ${site}` }` |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`                             |
+> | `405`     | `text/html;charset=utf-8` | None                                                                 |
 
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/state
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/products/synchronize
+> ```
+
+</details>
+
+---
+
+#### Synchronize One Product
+
+<details>
+ <summary><code>POST</code> <code><b>/synchronize/:site/:product_id</b></code> <code>(Synchronize One Product from Targeted Store)</code></summary>
+
+##### Parameters
+
+> | name       | type     | data type | description |
+> | ---------- | -------- | --------- | ----------- |
+> | site       | required | string    | N/A         |
+> | product_id | required | string    | N/A         |
+
+##### Responses
+
+> | http code | content-type              | response                                                                           |
+> | --------- | ------------------------- | ---------------------------------------------------------------------------------- |
+> | `200`     | `application/json`        | `{ message: "Request Received to Synchronize Product on ${site}: ${product_id}" }` |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`                                           |
+> | `405`     | `text/html;charset=utf-8` | None                                                                               |
+
+##### Example cURL
+
+> ```javascript
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/products/synchronize/:site/:product_id
 > ```
 
 </details>

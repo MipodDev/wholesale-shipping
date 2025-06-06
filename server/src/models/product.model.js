@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const VariantSchema = new Schema({
   id: { type: String, required: true },
   sku: { type: String },
+  title: { type: String },
 });
 
 const ProductSchema = new Schema({
@@ -27,6 +28,12 @@ const ProductSchema = new Schema({
   },
   unique_skus: {
     type: [String],
+  },
+  tags: {
+    type: [String],
+  },
+  site: {
+    type: String,
   },
   variants: [VariantSchema],
 });
