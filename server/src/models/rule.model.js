@@ -47,51 +47,54 @@ const CitySchema = new Schema({
   },
 });
 
-const RuleSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  range: {
-    type: String,
-    enum: ["State", "City", "Zip Code", "Customer"],
-    required: true,
-  },
-  type: {
-    type: String,
-    enum: ["Ban", "Exemption", "Registry"],
-  },
-  targeted_areas: {
-    type: [String],
-  },
-  states: {
-    type: [StateSchema],
-  },
-  cities: {
-    type: [CitySchema],
-  },
-  zipCodes: {
-    type: [ZipCodeSchema],
-  },
-  lists:{
-    type: [ListSchema]
-  },
-  targeted_lists: {
-    type: [ListSchema],
-  },
-  targeted_skus: {
-    type: [String],
-  },
+const RuleSchema = new Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    range: {
+      type: String,
+      enum: ["State", "City", "Zip Code", "Customer"],
+      required: true,
+    },
+    type: {
+      type: String,
+      enum: ["Ban", "Exemption", "Registry"],
+    },
+    targeted_areas: {
+      type: [String],
+    },
+    states: {
+      type: [StateSchema],
+    },
+    cities: {
+      type: [CitySchema],
+    },
+    zipCodes: {
+      type: [ZipCodeSchema],
+    },
+    lists: {
+      type: [ListSchema],
+    },
+    targeted_lists: {
+      type: [ListSchema],
+    },
+    targeted_skus: {
+      type: [String],
+    },
     skus: {
-    type: [String],
+      type: [String],
+    },
   },
-});
+  { timestamps: true }
+);
 
 const Rule = mongoose.model("Rules", RuleSchema);
 
