@@ -23,12 +23,12 @@ const ProductSchema = new Schema({
     type: String,
   },
   variantsCount: {
-    type: Number, // Changed from String to Number
+    type: Number,
   },
   unique_skus: {
     type: [String],
   },
-  variants: [VariantSchema], // Now properly stores an array of variants
+  variants: [VariantSchema],
 });
 
 const Product = mongoose.model("Products", ProductSchema);
