@@ -8,6 +8,9 @@ const {
   installService,
 } = require("../services/installation.service");
 const { v4: uuidv4 } = require("uuid");
+const {
+  synchronizeApplication,
+} = require("../controllers/synchronization.controller");
 
 router.get("/:site", async (req, res) => {
   const site = req.params.site;
@@ -16,6 +19,18 @@ router.get("/:site", async (req, res) => {
   const data = await getAllInstalledServices(req_id, site);
 
   res.send(data);
+});
+
+router.post("/synchronize/:site", async (req, res) => {
+  const req_id = uuidv4();
+  const site = req.params.site;
+
+  try {
+    const response = await synchronizeApplication(req_id, site);
+    res.status(200).send(response);
+  } catch (error) {
+    res.status(405).send(error);
+  }
 });
 
 router.post("/check/:site", async (req, res) => {

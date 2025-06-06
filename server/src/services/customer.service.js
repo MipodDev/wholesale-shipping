@@ -11,7 +11,7 @@ const {
 async function synchronizeCustomers(req_id, site) {
   let customer_set = new Set();
   let rejected_customers = new Set();
-
+  
   const first = 250;
 
   let filter = `first: ${first}`;
@@ -83,6 +83,7 @@ async function synchronizeCustomers(req_id, site) {
       );
     }
   }
+  return processed;
 }
 
 async function applyRuleToCustomer(site, customer_gid, rule_id) {

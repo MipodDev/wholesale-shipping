@@ -6,6 +6,32 @@
 
 ## How it Works...
 
+- [x] Sync Products
+  - [x] Shopify => Products
+    - Retreive all Active Shopify Products, sync updates to DB
+- [x] Sync Customers
+  - [x] Shopify => Customers
+    - Retreive all Shopify Customers, sync updates to DB
+- [x] Sync Lists
+  - [x] Products => Lists
+    - Retrieve Products Included & Excluded, Update Lists.Skus & Lists.Products
+- [X] Sync Rules
+  - [x] Lists => Rules.Skus
+  - Retreive Lists targeted by Rule, update Rule Skus with unique skus
+- [ ] Sync Zip Codes
+  - [ ] Business Central => Zip Codes
+    - Retreive all BC Zip Codes, sync updates to DB
+- [ ] Sync Carrier Services
+  - [ ] Zip Codes => Carrier Services.Zip Codes
+  - Retreive Zip Codes by Mapped Carrier & Assigned States, update Carrier Services Zip Codes
+- [ ] Sync States
+  - [x] Carrier Services => States
+  - [ ] Zip Codes => States
+  - [x] Rules => States
+- [x] Full Sync Controller
+  - [x]   Sequentially run each sync, using completion of last to drive the next
+## Routes
+
 ### 🛒 Rates (/api/rates)
 
 #### Get Rates
@@ -121,16 +147,67 @@
 
 ### 📄 Rules (/api/rules)
 
-#### Process Rules
+#### Synchronize all Rules
 
 <details>
- <summary><code>POST</code> <code><b>/process</b></code> <code>(Runs a procedure to synchronize rule data with states and lists)</code></summary>
+ <summary><code>POST</code> <code><b>/synchronize</b></code> <code>(Synchronizes Skus from Lists to all Rules)</code></summary>
 
 ##### Parameters
 
 > | name | type     | data type             | description |
 > | ---- | -------- | --------------------- | ----------- |
 > | None | required | object (JSON or YAML) | N/A         |
+
+##### Responses
+
+> | http code | content-type              | response                                         |
+> | --------- | ------------------------- | ------------------------------------------------ |
+> | `200`     | `application/json`        | `{results}` |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`         |
+> | `405`     | `text/html;charset=utf-8` | None                                             |
+
+**Example Response:**
+
+```json
+{
+  "req_id": "20125978-9d95-4c2d-866d-814b079cb507",
+  "results": [
+    {
+      "req_id": "20125978-9d95-4c2d-866d-814b079cb507",
+      "rule_id": "ad385d89-cc02-460c-b565-1e51257a0c64",
+      "updates": 0,
+      "errors": []
+    },
+    {
+      "req_id": "20125978-9d95-4c2d-866d-814b079cb507",
+      "rule_id": "a2d9295e-7f11-4364-b822-7e10de67563e",
+      "updates": 0,
+      "errors": []
+    }
+  ]
+}
+```
+
+##### Example cURL
+
+> ```javascript
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rules/synchronize
+> ```
+
+</details>
+
+---
+
+#### Synchronize one Rule
+
+<details>
+ <summary><code>POST</code> <code><b>/synchronize/:id</b></code> <code>(Synchronizes Skus from Lists to one Rules)</code></summary>
+
+##### Parameters
+
+> | name | type     | data type             | description |
+> | ---- | -------- | --------------------- | ----------- |
+> | id | strsing | Rule ID | N/A         |
 
 ##### Responses
 
@@ -143,7 +220,7 @@
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rules/process
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/rules/synchronize/:id
 > ```
 
 </details>
@@ -474,11 +551,11 @@
 
 ##### Responses
 
-> | http code | content-type              | response                                 |
-> | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{req_id, lists: 0, updated: 0, errors: []}`      |
-> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
-> | `405`     | `text/html;charset=utf-8` | None                                     |
+> | http code | content-type              | response                                     |
+> | --------- | ------------------------- | -------------------------------------------- |
+> | `200`     | `application/json`        | `{req_id, lists: 0, updated: 0, errors: []}` |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}`     |
+> | `405`     | `text/html;charset=utf-8` | None                                         |
 
 ##### Example cURL
 
@@ -503,11 +580,11 @@
 
 ##### Responses
 
-> | http code | content-type              | response                                 |
-> | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `{message:"List was updated succesfully"},{message:"No changes were made"}`      |
-> | `400`     | `application/json`        | `{{"code":"400","message":"Bad Request"}}` |
-> | `405`     | `text/html;charset=utf-8` | None                                     |
+> | http code | content-type              | response                                                                    |
+> | --------- | ------------------------- | --------------------------------------------------------------------------- |
+> | `200`     | `application/json`        | `{message:"List was updated succesfully"},{message:"No changes were made"}` |
+> | `400`     | `application/json`        | `{{"code":"400","message":"Bad Request"}}`                                  |
+> | `405`     | `text/html;charset=utf-8` | None                                                                        |
 
 ##### Example cURL
 
