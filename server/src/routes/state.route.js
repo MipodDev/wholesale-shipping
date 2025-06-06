@@ -7,9 +7,13 @@ const {
   getStateByCode,
   getAllStates,
 } = require("../controllers/state.controller");
-const { synchronizeStates, synchronizeState } = require("../services/state.service");
+const {
+  synchronizeStates,
+  synchronizeState,
+} = require("../services/state.service");
 const { v4: uuidv4 } = require("uuid");
 
+// Get All States
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
   try {
@@ -20,6 +24,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get State by State Code
 router.get("/:stateCode", async (req, res) => {
   const req_id = uuidv4();
   const stateCode = req.params.stateCode;
@@ -31,6 +36,7 @@ router.get("/:stateCode", async (req, res) => {
   }
 });
 
+// Create a State
 router.post("/", async (req, res) => {
   const req_id = uuidv4();
   const input = req.body;
@@ -42,6 +48,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Update State by Code
 router.patch("/:stateCode", async (req, res) => {
   const req_id = uuidv4();
   const stateCode = req.params.stateCode;
@@ -55,6 +62,7 @@ router.patch("/:stateCode", async (req, res) => {
   }
 });
 
+// Delete State by Code
 router.delete("/:stateCode", async (req, res) => {
   const req_id = uuidv4();
   const stateCode = req.params.stateCode;
@@ -66,27 +74,28 @@ router.delete("/:stateCode", async (req, res) => {
   }
 });
 
+// Synchronize all States (Rules, Services, Zip Codes)
 router.post("/synchronize", async (req, res) => {
-    const req_id = uuidv4();
-      try {
+  const req_id = uuidv4();
+  try {
     const response = await synchronizeStates(req_id);
     res.status(200).send(response);
   } catch (error) {
     res.status(405).send(error);
   }
+});
 
-})
+// Synchornize one State by Code (Rules, Services, Zip Codes)
 router.post("/synchronize/:stateCode", async (req, res) => {
-      const req_id = uuidv4();
+  const req_id = uuidv4();
 
-    const stateCode = req.params.stateCode;
-      try {
+  const stateCode = req.params.stateCode;
+  try {
     const response = await synchronizeState(req_id, stateCode);
     res.status(200).send(response);
   } catch (error) {
     res.status(405).send(error);
   }
-
-})
+});
 
 module.exports = router;

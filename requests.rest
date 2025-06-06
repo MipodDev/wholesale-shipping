@@ -24,7 +24,7 @@ Content-Type: application/json
     "destination": {
       "country": "US",
       "postal_code": "85008",
-      "province": "AZ",
+      "province": "WI",
       "city": "Phoenix",
       "name": "Dylan Walters",
       "address1": "4908 East McDowell Road",
@@ -41,7 +41,7 @@ Content-Type: application/json
     "items": [
   {
     "name": "Aloe GrapSe Orion Bar 7500 - Wholesale A / 50mg / 10 Pack",
-    "sku": "53364-10",
+    "sku": "58430-10",
     "quantity": 9,
     "grams": 850,
     "price": 8000,
@@ -183,6 +183,36 @@ Content-Type: application/json
 DELETE http://localhost:3000/api/rule/0b8ef2da-9b5a-4a67-ba28-ee92385c5f64
 Content-Type: application/json
 
+###
+#
+# States
+#
+###
+
+
+###
+POST http://localhost:3000/api/state/synchronize
+Content-Type: application/json
+
+
+
+###
+
+
+###
+#
+# Products
+#
+###
+
+
+###
+POST http://localhost:3000/api/products/synchronize/B2B
+Content-Type: application/json
+
+
+
+###
 
 
 

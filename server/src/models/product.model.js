@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const VariantSchema = new Schema({
   id: { type: String, required: true },
   sku: { type: String },
+  title: { type: String },
 });
 
 const ProductSchema = new Schema({
@@ -23,12 +24,18 @@ const ProductSchema = new Schema({
     type: String,
   },
   variantsCount: {
-    type: Number, // Changed from String to Number
+    type: Number,
   },
   unique_skus: {
     type: [String],
   },
-  variants: [VariantSchema], // Now properly stores an array of variants
+  tags: {
+    type: [String],
+  },
+  site: {
+    type: String,
+  },
+  variants: [VariantSchema],
 });
 
 const Product = mongoose.model("Products", ProductSchema);
