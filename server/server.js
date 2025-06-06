@@ -20,7 +20,7 @@ app.use(express.json());
 app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
-app.use("/api/list", listRoute);
+app.use("/api/lists", listRoute);
 app.use("/api/rule", ruleRoute);
 app.use("/api/products", productsRoute);
 app.use("/api/state", stateRoute);
