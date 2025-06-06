@@ -119,7 +119,7 @@
 
 ---
 
-### 📄 Rules (/api/rule)
+### 📄 Rules (/api/rules)
 
 #### Process Rules
 
@@ -459,12 +459,12 @@
 | for_zips                | array[string] | Active Zip Codes in Zone                                                    | `["86008","85226"]`                    |
 | mapped_carrier          | string        | Mapped to BC Carrier (Zip Codes)                                            | `GLS`                                  |
 
-### 📜 Lists (/api/list)
+### 📜 Lists (/api/lists)
 
-#### Process Lists
+#### Synchronize all Lists
 
 <details>
- <summary><code>POST</code> <code><b>/process</b></code> <code>(Runs a procedure to synchronize list data with rules)</code></summary>
+ <summary><code>POST</code> <code><b>/synchronize</b></code> <code>(Runs a procedure to synchronize all Product Lists with targeted products)</code></summary>
 
 ##### Parameters
 
@@ -476,14 +476,43 @@
 
 > | http code | content-type              | response                                 |
 > | --------- | ------------------------- | ---------------------------------------- |
-> | `200`     | `application/json`        | `Request Received to Process Lists`      |
+> | `200`     | `application/json`        | `{req_id, lists: 0, updated: 0, errors: []}`      |
 > | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
 > | `405`     | `text/html;charset=utf-8` | None                                     |
 
 ##### Example cURL
 
 > ```javascript
->  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/list/process
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/lists/synchronize
+> ```
+
+</details>
+
+---
+
+#### Synchronize one List
+
+<details>
+ <summary><code>POST</code> <code><b>/synchronize/:id</b></code> <code>(Runs a procedure to synchronize one Product Lists with targeted products)</code></summary>
+
+##### Parameters
+
+> | name | type     | data type             | description |
+> | ---- | -------- | --------------------- | ----------- |
+> | None | required | object (JSON or YAML) | N/A         |
+
+##### Responses
+
+> | http code | content-type              | response                                 |
+> | --------- | ------------------------- | ---------------------------------------- |
+> | `200`     | `application/json`        | `{message:"List was updated succesfully"},{message:"No changes were made"}`      |
+> | `400`     | `application/json`        | `{{"code":"400","message":"Bad Request"}}` |
+> | `405`     | `text/html;charset=utf-8` | None                                     |
+
+##### Example cURL
+
+> ```javascript
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/lists/synchronize/:id
 > ```
 
 </details>

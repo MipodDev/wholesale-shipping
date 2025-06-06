@@ -30,6 +30,7 @@ async function synchronizeLists(req_id) {
 }
 
 async function synchronizeOneList(req_id, list_id) {
+  let updated = false;
   try {
     const existing = await ListData.findOne({ id: list_id });
     console.log(`\n[${req_id}] Synchronizing List:`.blue.bold, existing.name);
@@ -45,7 +46,7 @@ async function synchronizeOneList(req_id, list_id) {
         for (let j = 0; j < products.length; j++) {
           const { product_id, title, status, variants, unique_skus } =
             products[j];
-          if (product_set.has({id: product_id})) {
+          if (product_set.has({ id: product_id })) {
             console.log(
               `[${req_id}] - Product already added to list:`.yellow,
               product_id
@@ -55,7 +56,7 @@ async function synchronizeOneList(req_id, list_id) {
             //   `[${req_id}] - Product added to list:`.green,
             //   product_id
             // );
-            
+
             product_set.add({
               id: product_id,
               title,
@@ -81,12 +82,12 @@ async function synchronizeOneList(req_id, list_id) {
         const products = await queryProducts(req_id, query);
         for (let j = 0; j < products.length; j++) {
           const { product_id, unique_skus } = products[j];
-          if (product_set.has({id: product_id})) {
+          if (product_set.has({ id: product_id })) {
             console.log(
               `[${req_id}] - Excluding Product from List:`.red,
               product_id
             );
-            product_set.delete({id: product_id});
+            product_set.delete({ id: product_id });
             for (let sku of unique_skus) {
               if (sku_set.has(sku)) {
                 sku_set.delete(sku);
@@ -105,23 +106,60 @@ async function synchronizeOneList(req_id, list_id) {
     const products = Array.from(product_set);
 
     console.log(`[${req_id}] Products Included:`.green, products.length);
-        console.log(`[${req_id}] Skus Included:`.green, skus.length);
+    console.log(`[${req_id}] Skus Included:`.green, skus.length);
 
-    existing.skus = skus;
-    existing.products = products;
-    const saved = await existing.save();
-    console.log(`[${req_id}] Synchronized List:`.green.bold, saved.name);
+    const compareProductsByFields = (a, b, fields = ["id"]) => {
+      if (a.length !== b.length) return false;
 
+      for (let i = 0; i < a.length; i++) {
+        for (const field of fields) {
+          if (a[i][field] !== b[i][field]) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    };
+
+    if (!compareProductsByFields(existing.products, products)) {
+      console.log(`[${req_id}] Update Detected:`.yellow, "products");
+      existing.products = products.map((product, i) => ({
+        ...product,
+        _id: existing.products[i]?._id || undefined, // Preserve _id if it exists
+      }));
+      updated = true;
+    }
+
+    const areArraysEqual = (arr1, arr2) => {
+      if (arr1.length !== arr2.length) return false;
+      return arr1.every((item, idx) => item === arr2[idx]);
+    };
+
+    if (!areArraysEqual(existing.skus, skus)) {
+      console.log(`[${req_id}] Update Detected:`.yellow, "skus");
+      existing.skus = [...skus];
+      updated = true;
+    }
+    if (updated) {
+      existing.skus = skus;
+      existing.products = products;
+      const saved = await existing.save();
+      console.log(`[${req_id}] List Updated:`.green.bold, saved.name);
+    } else {
+      console.log(`[${req_id}] No Changes:`.yellow.bold, existing.name);
+    }
   } catch (error) {
     console.log(error);
   }
-  return false;
+  return updated;
 }
 
 async function queryProducts(req_id, query) {
   const { key, value } = query;
   console.log(
-    `[${req_id}] Executing Product Query | Type: ${key} | Value: ${value}`.yellow
+    `[${req_id}] Executing Product Query | Type: ${key} | Value: ${value}`
+      .yellow
   );
 
   let products = [];

@@ -14,7 +14,6 @@ const {
   getAllLists,
 } = require("../controllers/list.controller");
 
-
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
   try {
@@ -84,7 +83,13 @@ router.post("/synchronize/:id", async (req, res) => {
   const list_id = req.params.id;
   try {
     const response = await synchronizeOneList(req_id, list_id);
-    res.status(200).send(response);
+    let message = null;
+    if (response) {
+      message = "List was updated succesfully";
+    } else {
+      message = "No changes were made";
+    }
+    res.status(200).send({message});
   } catch (error) {
     res.status(405).send(error);
   }
