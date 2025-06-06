@@ -8,6 +8,7 @@ const {
   getAllStates,
 } = require("../controllers/state.controller");
 const { synchronizeStates, synchronizeState } = require("../services/state.service");
+const { v4: uuidv4 } = require("uuid");
 
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
