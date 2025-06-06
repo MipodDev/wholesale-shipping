@@ -75,6 +75,9 @@ async function getApproval(req_id, site, rules, state, cart_detail) {
   console.log(`[${req_id}] Trying approval...`.blue.bold);
   console.log(`[${req_id}] Rules to process:`.blue, rules.length);
   for (let i = 0; i < rules.length; i++) {
+    if(!approval.allow){
+      continue;
+    }
     let targeted_area = false;
     const rule = await RuleData.findOne({ id: rules[i].id });
 
@@ -117,28 +120,36 @@ async function getApproval(req_id, site, rules, state, cart_detail) {
     const { unique_items } = cart_detail;
     switch (type) {
       case "Ban":
-        for (let i = 0; i < unique_items.length; i++) {
-          if (skus && skus.includes(unique_items[i])) {
+        let banned = false;
+        for (let j = 0; j < unique_items.length; j++) {
+          if (skus && skus.includes(unique_items[j])) {
             console.log(
               `[${req_id}] (Ban) Prevent Shipping Rates:`.red.bold,
-              unique_items[i]
+              unique_items[j]
             );
-            approval.allow = false;
-            approval.reason = `Banned Item: ${name} (${unique_items[i]})`;
+            banned = true;
+            approval.reason = `Banned Item: ${name} (${unique_items[j]})`;
             break;
           }
+        }
+        if (banned) {
+          approval.allow = false;
         }
 
         break;
       case "Exemption":
-        for (let i = 0; i < unique_items.length; i++) {
-          if (!skus && skus.includes(unique_items[i])) {
-            console.log(
-              `[${req_id}] Items not Exempt from Shipping Rates`.red.bold
-            );
+        let exempt = true;
 
+        for (let j = 0; j < unique_items.length; j++) {
+          if (skus && !skus.includes(unique_items[j])) {
+            console.log(
+              `[${req_id}] Item not Exempt from Shipping Rates:`.red.bold,
+              unique_items[j]
+            );
+            exempt = false;
             break;
-          } else {
+          }
+          if (exempt) {
             console.log(`[${req_id}] Provide Exempt Shipping Rates`.green.bold);
             approval.exempt = true;
           }
@@ -146,15 +157,26 @@ async function getApproval(req_id, site, rules, state, cart_detail) {
 
         break;
       case "Registry":
-        for (let i = 0; i < unique_items.length; i++) {
-          if (!skus && skus.includes(unique_items[i])) {
+        let registered = true;
+        for (let j = 0; j < unique_items.length; j++) {
+          if (skus && !skus.includes(unique_items[j])) {
             console.log(
               `[${req_id}] (Registry) Prevent Shipping Rates:`.red.bold,
-              unique_items[i]
+              unique_items[j]
             );
-            approval.allow = false;
+            approval.reason = `Non-Registry Item: ${name} (${unique_items[j]})`;
+
+            registered = false;
             break;
           }
+        }
+        if (registered) {
+          console.log(
+            `[${req_id}] (Registry) Provide Shipping Rates`.green.bold
+          );
+        } else {
+          approval.allow = false;
+          console.log(`[${req_id}] (Registry) Prevent Shipping Rates`.red.bold);
         }
 
         break;
@@ -203,9 +225,9 @@ async function getCustomerDetail(req_id, site, rate_request) {
 
 async function getServices(req_id, site, rate_request, cart_detail, approval) {
   const { allow, exempt, reason } = approval;
-  if(!allow){
+  if (!allow) {
     return [];
-  };
+  }
 
   const { destination, items } = rate_request;
   const state_code = destination.province;
@@ -276,7 +298,7 @@ async function getServices(req_id, site, rate_request, cart_detail, approval) {
       } else {
         console.log(`[${req_id}] Not elligible for free shipping...`.yellow);
       }
-      if(exempt){
+      if (exempt) {
         service_price = 0;
       }
       let carrier_service = {
