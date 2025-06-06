@@ -2,6 +2,19 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
+const ZipCodeSchema = new Schema({
+  stateCode: {
+    type: String,
+  },
+  code: {
+    unique: true,
+    type: String,
+  },
+  county: {
+    type: String,
+  },
+});
+
 const ListSchema = new Schema({
   id: {
     type: String,
@@ -64,7 +77,7 @@ const RuleSchema = new Schema({
     type: [CitySchema],
   },
   zipCodes: {
-    type: [String],
+    type: [ZipCodeSchema],
   },
   lists:{
     type: [ListSchema]

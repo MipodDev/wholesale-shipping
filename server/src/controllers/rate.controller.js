@@ -2,10 +2,12 @@ const RequestLogs = require("../models/requestLoq.model");
 const CustomerData = require("../models/customer.model");
 const StateData = require("../models/state.model");
 const ServiceData = require("../models/service.model");
+const RuleData = require("../models/rule.model");
 
 async function getRates(req_id, site, rate_request) {
   let rates = [];
   let rules = [];
+
   console.log(`\n[${req_id}] Received Rate Request from:`.magenta.bold, site);
 
   const customer = await getCustomerDetail(req_id, site, rate_request);
@@ -14,14 +16,14 @@ async function getRates(req_id, site, rate_request) {
       `[${req_id}] Applying Customer Rules:`.blue,
       customer.rules.length
     );
-    rules = [...customer.rules];
+    rules = [...rules, ...customer.rules]; // ✅ add customer rules to rules
   } else {
     console.log(`[${req_id}] No Customer Rules to Apply.`.yellow);
   }
 
   const state = await getStateDetail(req_id, site, rate_request);
   if (!state || state.status !== "enabled") {
-    console.log(`[${req_id}] State Status:`.red, state.status);
+    console.log(`[${req_id}] State Status:`.red, state?.status || "unknown");
     rules.push({
       type: "State Status",
       range: "State",
@@ -29,9 +31,9 @@ async function getRates(req_id, site, rate_request) {
     return [];
   } else {
     console.log(`[${req_id}] State Status:`.green, state.status);
-    if (state.rules > 0) {
+    if (state.rules.length > 0) {
       console.log(`[${req_id}] Applying State Rules:`.blue, state.rules.length);
-      rules = [...state.rules];
+      rules = [...rules, ...state.rules]; // ✅ append state rules to existing rules
     } else {
       console.log(`[${req_id}] No State Rules to Apply.`.yellow);
     }
@@ -47,7 +49,13 @@ async function getRates(req_id, site, rate_request) {
     cart_detail
   );
 
-  const services = await getServices(req_id, site, rate_request, cart_detail);
+  const services = await getServices(
+    req_id,
+    site,
+    rate_request,
+    cart_detail,
+    approval
+  );
   console.log(
     `[${req_id}] Available Services for Zone:`.green,
     services.length
@@ -60,7 +68,7 @@ async function getRates(req_id, site, rate_request) {
 
 async function getApproval(req_id, site, rules, state, cart_detail) {
   let approval = {
-    allow: false,
+    allow: true,
     exempt: false,
     reason: null,
   };
@@ -68,9 +76,9 @@ async function getApproval(req_id, site, rules, state, cart_detail) {
   console.log(`[${req_id}] Rules to process:`.blue, rules.length);
   for (let i = 0; i < rules.length; i++) {
     let targeted_area = false;
+    const rule = await RuleData.findOne({ id: rules[i].id });
 
-    const { name, range, type, lists, states, cities, zipCodes, skus } =
-      rules[i];
+    const { name, range, type, lists, states, cities, zipCodes, skus } = rule;
     console.log(`[${req_id}] Validating:`.blue, name);
     switch (range) {
       case "Customer":
@@ -105,19 +113,51 @@ async function getApproval(req_id, site, rules, state, cart_detail) {
       console.log(`[${req_id}] Applying ${type}:`.green, name);
     }
     // Check items
-    let items_flagged = false;
 
     const { unique_items } = cart_detail;
-    for (let i = 0; i < unique_items.length; i++) {
-      if (skus && skus.includes(unique_items[i])) {
-        items_flagged = true;
-      }
-    }
-    if (!items_flagged) {
-      console.log(`Items are not flagged.`.yellow);
-      continue;
-    } else {
-      console.log(`Items are flagged, conduct ${type}`.green.bold);
+    switch (type) {
+      case "Ban":
+        for (let i = 0; i < unique_items.length; i++) {
+          if (skus && skus.includes(unique_items[i])) {
+            console.log(
+              `[${req_id}] (Ban) Prevent Shipping Rates:`.red.bold,
+              unique_items[i]
+            );
+            approval.allow = false;
+            approval.reason = `Banned Item: ${name} (${unique_items[i]})`;
+            break;
+          }
+        }
+
+        break;
+      case "Exemption":
+        for (let i = 0; i < unique_items.length; i++) {
+          if (!skus && skus.includes(unique_items[i])) {
+            console.log(
+              `[${req_id}] Items not Exempt from Shipping Rates`.red.bold
+            );
+
+            break;
+          } else {
+            console.log(`[${req_id}] Provide Exempt Shipping Rates`.green.bold);
+            approval.exempt = true;
+          }
+        }
+
+        break;
+      case "Registry":
+        for (let i = 0; i < unique_items.length; i++) {
+          if (!skus && skus.includes(unique_items[i])) {
+            console.log(
+              `[${req_id}] (Registry) Prevent Shipping Rates:`.red.bold,
+              unique_items[i]
+            );
+            approval.allow = false;
+            break;
+          }
+        }
+
+        break;
     }
   }
 
@@ -161,7 +201,12 @@ async function getCustomerDetail(req_id, site, rate_request) {
   return customer;
 }
 
-async function getServices(req_id, site, rate_request, cart_detail) {
+async function getServices(req_id, site, rate_request, cart_detail, approval) {
+  const { allow, exempt, reason } = approval;
+  if(!allow){
+    return [];
+  };
+
   const { destination, items } = rate_request;
   const state_code = destination.province;
   const zip_code = destination.postal_code?.substring(0, 5);
@@ -231,7 +276,9 @@ async function getServices(req_id, site, rate_request, cart_detail) {
       } else {
         console.log(`[${req_id}] Not elligible for free shipping...`.yellow);
       }
-
+      if(exempt){
+        service_price = 0;
+      }
       let carrier_service = {
         service_name,
         service_code,

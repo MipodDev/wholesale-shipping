@@ -3,6 +3,7 @@ const path = require("path"); // Needed for path handling
 require("dotenv").config();
 const colors = require("colors");
 const { connect, disconnect, ping } = require("./src/utils/db");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 const ratesRoute = require("./src/routes/rates.route");
