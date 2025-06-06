@@ -1057,3 +1057,59 @@
 </details>
 
 ---
+#### Synchronize All States
+
+<details>
+ <summary><code>POST</code> <code><b>/synchronize</b></code> <code>(Synchronize all States (rules, services, zip codes))</code></summary>
+
+##### Parameters
+
+> | name | type     | data type             | description |
+> | ---- | -------- | --------------------- | ----------- |
+> | None | required | object (JSON or YAML) | N/A         |
+
+##### Responses
+
+> | http code | content-type              | response                                 |
+> | --------- | ------------------------- | ---------------------------------------- |
+> | `200`     | `application/json`        | `{ message: "State deleted" }`     |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
+> | `405`     | `text/html;charset=utf-8` | None                                     |
+
+##### Example cURL
+
+> ```javascript
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/state/synchronize
+> ```
+
+</details>
+
+---
+#### Delete a State
+
+<details>
+ <summary><code>POST</code> <code><b>/synchronize/:stateCode</b></code> <code>(Synchronize one State (rules, services, zip codes))</code></summary>
+
+##### Parameters
+
+> | name | type     | data type             | description |
+> | ---- | -------- | --------------------- | ----------- |
+> | stateCode | required | string | N/A         |
+
+##### Responses
+
+> | http code | content-type              | response                                 |
+> | --------- | ------------------------- | ---------------------------------------- |
+> | `200`     | `application/json`        | `{ message: "State deleted" }`     |
+> | `400`     | `application/json`        | `{"code":"400","message":"Bad Request"}` |
+> | `405`     | `text/html;charset=utf-8` | None                                     |
+
+##### Example cURL
+
+> ```javascript
+>  curl -X POST -H "Content-Type: application/json" --data @post.json http://localhost:7000/api/state/synchronize/:stateCode
+> ```
+
+</details>
+
+---
