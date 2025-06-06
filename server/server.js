@@ -21,9 +21,9 @@ app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
 app.use("/api/lists", listRoute);
-app.use("/api/rule", ruleRoute);
+app.use("/api/rules", ruleRoute);
 app.use("/api/products", productsRoute);
-app.use("/api/state", stateRoute);
+app.use("/api/states", stateRoute);
 
 
 app.get("/test", async (req, res) => {
