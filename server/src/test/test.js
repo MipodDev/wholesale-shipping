@@ -4,81 +4,59 @@ const {
   deleteCustomer,
   customerCleanupQuery,
 } = require("../graphql/customers");
-const { loadStates } = require("../services/state.service");
-const colors = require("colors");
+const { v4: uuidv4 } = require("uuid");
 const SiteData = require("../models/site.model");
-
-
-// async function test() {
-//   let customer_set = new Set();
-//   let rejected_customers = new Set();
-
-//   const site = "B2B";
-//   const first = 250;
-
-//   let filter = `first: ${first}`;
-//   let last_cursor = null;
-//   let processed = 0;
-
-//   while (true) {
-//     if (last_cursor) {
-//       console.log(`Retreiving next ${first} customers (${processed})`);
-
-//       filter = `first: ${first}, after: "${last_cursor}"`;
-//     } else {
-//       console.log(`Retreiving first ${first} customers...`);
-//     }
-//     const data = await retreiveCustomerData(site, filter);
-
-//     const customers = data.customers.edges;
-//     last_cursor = data.customers.pageInfo.endCursor;
-//     for (let i = 0; i < customers.length; i++) {
-//       const { node } = customers[i];
-//       // console.log(node);
-//       let customer = {
-//         id: node.id,
-//         email: node.defaultEmailAddress
-//           ? node.defaultEmailAddress.emailAddress
-//           : "",
-//         phone: node.defaultPhoneNumber
-//           ? node.defaultPhoneNumber.phoneNumber
-//           : "",
-//         numberOfOrders: node.numberOfOrders,
-//       };
-//       if (!node.defaultEmailAddress || !node.defaultPhoneNumber) {
-//         rejected_customers.add(customer);
-//       } else {
-//         customer_set.add(customer);
-//       }
-//       processed++;
-//     }
-//     if (customers.length < first) {
-//       break;
-//     }
-//   }
-
-//   // const carrierServices = data.carrierServices.edges;
-//   // for (let i = 0; i < carrierServices.length; i++) {
-//   //   console.log(carrierServices[i]);
-//   // }
-//   const posPercent =
-//     (customer_set.size / (customer_set.size + rejected_customers.size)) * 100;
-//   const negPercent =
-//     (rejected_customers.size / (customer_set.size + rejected_customers.size)) *
-//     100;
-//   console.log(`Valid Customers:`, customer_set.size, `(${posPercent}%)`);
-//   console.log(
-//     `Invalid Customers:`,
-//     rejected_customers.size,
-//     `(${negPercent}%)`
-//   );
-// }
-
-// async function test(){
-//   await loadStates();
-// }
-
+const RuleData = require("../models/rule.model");
+const StateData = require("../models/state.model");
+const ListData = require("../models/list.model");
+const { applyRuleToCustomer } = require("../services/customer.service");
+const { syncRules } = require("../services/rule.service");
+const { synchronizeServices } = require("../services/carrierService.service");
 async function test() {
+  const site = "SBX";
+  await syncRules(uuidv4());
+  return;
+  const rule = await RuleData.findOne({
+    id: "ad385d89-cc02-460c-b565-1e51257a0c64",
+  });
+  console.log(`Found Rule:`, rule.name);
+  let xRule = rule;
+  for (let stateCode of rule.targeted_areas) {
+    const state = await StateData.findOne({ code: stateCode });
+    rule.states.push({
+      name: state.name,
+      code: state.code,
+    });
+  }
+  rule.lists = rule.targeted_lists;
+  rule.skus = rule.targeted_skus;
+  if (xRule !== rule) {
+    console.log(`Changes found:`, rule.name);
+
+    const saved = await rule.save();
+    console.log(`Updated Rule:`, saved);
+  } else {
+    console.log("No changes found");
+  }
+}
+
+async function createTestCustomerBan() {
+  const lists = await ListData.find();
+  console.log(lists);
+
+  const rule_data = {
+    id: uuidv4(),
+    name: "Dylan's Registry",
+    range: "Customer",
+    type: "Registry",
+    lists: {
+      id: "9a61a6b7-0f0c-47d8-b010-96eb6a27ee78",
+      name: "Nixodine Product List",
+      category: "Nixodine",
+    },
+  };
+  const rule = await RuleData.create(rule_data);
+  console.log(`New rule created:`, rule);
 }
 
 // async function testInstallation() {
