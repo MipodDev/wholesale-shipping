@@ -3,14 +3,13 @@
   "version": "0.0.3",
   "description": "",
   "main": "server/server.js",
-"scripts": {
-  "start": "node server/server.js",
-  "dev": "concurrently \"npm run server\" \"npm run client\"",
-  "server": "nodemon server/server.js",
-  "client": "npm run dev --prefix client",
-  "heroku-postbuild": "npm install --prefix client && npm run build --prefix client"
-},
-
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server/server.js",
+    "client": "npm run dev --prefix client",
+    "heroku-postbuild": "npm install --prefix client && npm run build --prefix client"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -21,7 +20,8 @@
     "express": "^5.1.0",
     "mongoose": "^8.15.1",
     "path": "^0.12.7",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "vite": "^6.3.5"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"
