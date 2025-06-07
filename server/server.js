@@ -17,8 +17,10 @@ const productsRoute = require("./src/routes/products.route");
 const { test } = require("./src/test/test");
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Wholesale Shipping App");
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
 });
 
 app.use("/api/rates", ratesRoute);
