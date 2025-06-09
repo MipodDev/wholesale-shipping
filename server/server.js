@@ -16,7 +16,6 @@ const ruleRoute = require("./src/routes/rule.route");
 const stateRoute = require("./src/routes/state.route");
 const productsRoute = require("./src/routes/products.route");
 
-const { test } = require("./src/test/test");
 // JSON parsing
 app.use(express.json());
 
@@ -29,11 +28,6 @@ app.use("/api/rules", ruleRoute);
 app.use("/api/products", productsRoute);
 app.use("/api/states", stateRoute);
 
-// Add /test route BEFORE the fallback
-app.get("/test", async (req, res) => {
-  await test();
-  res.send("request received");
-});
 const clientDistPath = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDistPath));
 
@@ -41,8 +35,6 @@ app.use(express.static(clientDistPath));
 app.get('/{/*path}', (req, res) => {
   res.sendFile(path.join(clientDistPath, 'index.html'));
 });
-
-
 
 app.listen(PORT, async () => {
   console.clear();
