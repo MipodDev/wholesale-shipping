@@ -1,5 +1,7 @@
-const express = require("express");
-const path = require("path"); // Needed for path handling
+// wholesale-shipping/server/server.js
+
+const express = require('express');
+const path = require('path');
 require("dotenv").config();
 const colors = require("colors");
 const { connect, disconnect, ping } = require("./src/utils/db");
@@ -15,14 +17,10 @@ const stateRoute = require("./src/routes/state.route");
 const productsRoute = require("./src/routes/products.route");
 
 const { test } = require("./src/test/test");
+// JSON parsing
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, "../client/dist")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-});
-
+// API routes
 app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
@@ -31,10 +29,20 @@ app.use("/api/rules", ruleRoute);
 app.use("/api/products", productsRoute);
 app.use("/api/states", stateRoute);
 
+// Add /test route BEFORE the fallback
 app.get("/test", async (req, res) => {
   await test();
   res.send("request received");
 });
+const clientDistPath = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDistPath));
+
+// Fallback for SPA routes
+app.get('/{/*path}', (req, res) => {
+  res.sendFile(path.join(clientDistPath, 'index.html'));
+});
+
+
 
 app.listen(PORT, async () => {
   console.clear();
