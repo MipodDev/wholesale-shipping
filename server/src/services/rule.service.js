@@ -2,202 +2,84 @@ const RuleData = require("../models/rule.model");
 const { v4: uuidv4 } = require("uuid");
 const colors = require("colors");
 const StateData = require("../models/state.model");
+const listData = require("../models/list.model");
 
-async function processRules(req_id) {
-  const rules = await RuleData.find();
-  console.log(`[${req_id}] Rules found:`.blue.bold, rules.length);
+async function synchronizeAllRules(req_id) {
+  let response = {
+    req_id,
+    results: []
+  }
+  console.log(`[${req_id}] Synchronizing All Rules...`.cyan.bold);
+  const rules = await RuleData.find().select("id");
+  console.log(`[${req_id}] Rules Found:`.green.bold, rules.length);
   for (let i = 0; i < rules.length; i++) {
-    const rule = await RuleData.findOne({
-      name: rules[i].name,
-    });
-
-    if (!rule.id) {
-      console.log(`[${req_id}] Updating ID for Rule:`.yellow, rule.name);
-
-      rule.id = uuidv4();
+    
       try {
-        const saved = await rule.save();
-        console.log(`[${req_id}] Updated Mongo Record!`.green);
+
+    const sync = await synchronizeOneRule(req_id, rules[i].id);
+   
+    response.results.push(sync);
       } catch (error) {
-        console.log(`[${req_id}] Failed to update Mongo Record:`.red, error);
-      }
-    }
-    if (!rule.range) {
-      console.log(`[${req_id}] Updating Range for Rule:`.yellow, rule.name);
+    console.log(error);
+  }
 
-      rule.range = "State";
-      try {
-        const saved = await rule.save();
-        console.log(`[${req_id}] Updated Mongo Record!`.green);
-      } catch (error) {
-        console.log(`[${req_id}] Failed to update Mongo Record:`.red, error);
-      }
-    }
-    if (!rule.type) {
-      console.log(`[${req_id}] Updating type for Rule:`.yellow, rule.name);
+  }
+  return response;
+}
 
-      rule.type = "Ban";
-      try {
-        const saved = await rule.save();
-        console.log(`[${req_id}] Updated Mongo Record!`.green);
-      } catch (error) {
-        console.log(`[${req_id}] Failed to update Mongo Record:`.red, error);
-      }
-    }
+async function synchronizeOneRule(req_id, rule_id) {
+  let sync = {
+    req_id,
+    rule_id,
+    updates: 0,
+    errors: [],
+  };
+  console.log(`\n[${req_id}] Synchronizing Rule:`.blue.bold, rule_id);
 
-    const {
-      id,
-      name,
-      targeted_skus,
-      targeted_areas,
-      targeted_lists,
-      type,
-      range,
-    } = rule;
-    console.log(`[${req_id}] Rule:`.magenta.bold, name);
-    console.log(
-      `[${req_id}] Total SKUs Targeted:`.magenta,
-      targeted_skus.length
-    );
-    console.log(`[${req_id}] Target Areas:`.magenta);
-    for (let state of targeted_areas) {
-      console.log(`- ${state}`.blue);
+  const rule = await RuleData.findOne({ id: rule_id });
 
-      const existing_state = await StateData.findOne({ code: state });
-      console.log(`[${req_id}] Updating:`, existing_state.name);
-      if (!existing_state.rules) {
-        existing_state.rules = [];
-        console.log(`[${req_id}] Adding Rule...`.green);
-
-        existing_state.rules.push({ id, name, targeted_lists, type, range });
-      }
-      if (existing_state.rules.length > 0) {
-        for (let exRules of existing_state.rules) {
-          if (exRules.name === name) {
-            console.log(`Rule already assigned...`.yellow);
-          } else {
-            console.log(`Adding Rule...`.green);
-
-            existing_state.rules.push({
-              id,
-              name,
-              targeted_lists,
-              type,
-              range,
-            });
+  console.log(`[${req_id}] List(s) assigned to Rule:`.blue, rule.lists.length);
+  try {
+    if (rule.lists.length > 0) {
+      for (let i = 0; i < rule.lists.length; i++) {
+        const list = rule.lists[i];
+        const skus = await getListDetail(req_id, list.id);
+        for (let sku of skus) {
+          if (!rule.skus.includes(sku)) {
+            rule.skus.push(sku);
+            sync.updates++;
           }
         }
-      } else {
-        console.log(`Adding Rule...`.green);
-
-        existing_state.rules.push({ id, name, targeted_lists, type, range });
       }
-
-      const saved = await existing_state.save();
-      console.log(`[${req_id}] Updated mongo record...`.green.bold);
     }
-    console.log(`[${req_id}] Target Lists:`.magenta);
-    for (let list of targeted_lists) {
-      console.log(`- ${list.name} (${list.category})`.blue);
-    }
+  } catch (error) {
+    console.log(error);
   }
-}
-
-async function updateRule(req_id, rule_id, input) {
-  console.log(`[${req_id}] Updating Rule:`.blue.bold, rule_id);
-
-  const rule = await RuleData.findOne({ id: rule_id });
-  if (!rule) {
-    throw new Error("Rule not found");
-  }
-  let xRule = rule;
-  if (rule.name !== input.name) {
-    console.log(`Updating rule name:`, name);
-    rule.name = input.name;
-  }
-  if (rule.range !== input.range) {
-    console.log(`Updating rule range:`, range);
-    rule.range = input.range;
-  }
-  if (rule.type !== input.type) {
-    console.log(`Updating rule type:`, type);
-    rule.type = input.type;
-  }
-  if (rule.states !== input.states) {
-    console.log(`Updating rule states:`, states);
-    rule.states = input.states;
-  }
-  if (rule.cities !== input.cities) {
-    console.log(`Updating rule cities:`, cities);
-    rule.cities = input.cities;
-  }
-  if (rule.zipCodes !== input.zipCodes) {
-    console.log(`Updating rule zipCodes:`, zipCodes);
-    rule.zipCodes = input.zipCodes;
-  }
-  if (rule.lists !== input.lists) {
-    console.log(`Updating rule lists:`, lists);
-    rule.lists = input.lists;
-  }
-  if (rule !== xRule) {
-    console.log("Changes found in update attempt");
-  }
-}
-
-async function syncRules(req_id) {
-  console.log(`Synchronizing Rules...`.blue.bold);
-  let results = [];
-  const rules = await RuleData.find();
-  console.log(`Rules found:`, rules.length);
-  for (let i = 0; i < rules.length; i++) {
-    const result = await synchronizeRule(req_id, rules[i].id);
-    results.push(result);
-  }
-  return results;
-}
-
-async function synchronizeRule(req_id, rule_id) {
-  let result = {
-    rule_id,
-    name: null,
-    updated: false,
-  };
-  const rule = await RuleData.findOne({ id: rule_id });
-  console.log(`Synchronizing:`, rule.name);
-  const xRule = rule;
-  const {
-    id,
-    name,
-    range,
-    type,
-    targeted_areas,
-    states,
-    cities,
-    zipCodes,
-    targeted_lists,
-    targeted_skus,
-    skus,
-  } = rule;
-  if (rule.skus !== targeted_skus) {
-    rule.skus = targeted_skus;
-  }
-  if (rule.states !== targeted_areas) {
-    rule.states = targeted_areas;
-  }
-  if (rule.lists !== targeted_lists) {
-    rule.lists = targeted_lists;
-  }
-  if (xRule !== rule) {
+  if (sync.updates > 0) {
     const saved = await rule.save();
-    console.log(`Updated Rule!`.green);
-    result.updated = true;
+    console.log(`[${req_id}] Saved updates to Rule:`.green, saved.name);
+  } else {
+    console.log(`[${req_id}] No updates made to Rule:`.yellow, rule.name);
   }
 
-  return result;
+  return sync;
+}
+
+async function getListDetail(req_id, list_id) {
+  try {
+    const list = await listData.findOne({ id: list_id }).select("name skus");
+    const { name, skus } = list;
+    console.log(
+      `[${req_id}] Skus assigned to List (${name}):`.green,
+      skus.length
+    );
+    return skus;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 module.exports = {
-  processRules,
-  updateRule,
-  syncRules,
+  synchronizeAllRules,
+  synchronizeOneRule,
 };

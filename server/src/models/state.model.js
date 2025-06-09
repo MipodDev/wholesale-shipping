@@ -75,33 +75,35 @@ const ServiceSchema = new Schema({
     type: String,
     required: true,
   },
-
 });
 
-const StateSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
+const StateSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    status: {
+      type: String,
+    },
+    rules: {
+      type: [RuleSchema],
+    },
+    zipCodes: {
+      type: [ZipCodeSchema],
+    },
+    services: {
+      type: [ServiceSchema],
+    },
   },
-  code: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  status: {
-    type: String,
-  },
-  rules: {
-    type: [RuleSchema],
-  },
-  zipCodes: {
-    type: [ZipCodeSchema],
-  },
-  services: {
-    type: [ServiceSchema],
-  },
-});
+  { timestamps: true }
+);
 
 const State = mongoose.model("State", StateSchema);
 

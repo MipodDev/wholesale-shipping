@@ -17,14 +17,19 @@ const productsRoute = require("./src/routes/products.route");
 const { test } = require("./src/test/test");
 app.use(express.json());
 
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
+
 app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
-app.use("/api/list", listRoute);
-app.use("/api/rule", ruleRoute);
+app.use("/api/lists", listRoute);
+app.use("/api/rules", ruleRoute);
 app.use("/api/products", productsRoute);
-app.use("/api/state", stateRoute);
-
+app.use("/api/states", stateRoute);
 
 app.get("/test", async (req, res) => {
   await test();
