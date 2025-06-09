@@ -9,7 +9,9 @@ async function createList(req_id, input) {
     const new_list = {
       id: uuidv4(),
       name: input.name,
-      category: input.category,
+      category: input.category ? input.category : "",
+      include: input.include ? input.include : [],
+      exclude: input.exclude ? input.exclude : [],
     };
 
     try {
@@ -36,6 +38,7 @@ async function updateList(req_id, object_id, input) {
     return error;
   }
 }
+
 async function deleteList(req_id, object_id) {
   console.log(`[${req_id}] Deleting list:`.blue, object_id);
   try {
@@ -47,6 +50,7 @@ async function deleteList(req_id, object_id) {
     return error;
   }
 }
+
 async function getListById(req_id, object_id) {
   console.log(`[${req_id}] Retreiving list:`.blue, object_id);
   try {
@@ -56,15 +60,17 @@ async function getListById(req_id, object_id) {
     return error;
   }
 }
+
 async function getAllLists(req_id) {
   console.log(`[${req_id}] Retreiving all lists`.blue);
   try {
-    const rules = await ListData.find();
-    return rules;
+    const lists = await ListData.find().select("id name category include exclude");
+    return lists;
   } catch (error) {
     return error;
   }
 }
+
 module.exports = {
   createList,
   updateList,

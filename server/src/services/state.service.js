@@ -13,8 +13,12 @@ async function synchronizeStates(req_id) {
   const states = await stateData.find();
   for (let i = 0; i < states.length; i++) {
     const { code } = states[i];
-    const result = await synchronizeState(req_id, code);
-    response.results.push(result);
+    try {
+      const result = await synchronizeState(req_id, code);
+      response.results.push(result);
+    } catch (error) {
+      response.errors.push(error);
+    }
   }
   return response;
 }
@@ -49,7 +53,6 @@ async function synchronizeState(req_id, stateCode) {
 
   //   Add to State.Services
   const xServices = state.services;
-
   try {
     state.services = await findRelatedServices(req_id, stateCode);
 
@@ -66,7 +69,6 @@ async function synchronizeState(req_id, stateCode) {
 
   //   Add to State.zipCodes
   const xZipCodes = state.zipCodes;
-
   try {
     state.zipCodes = await findRelatedZipCodes(req_id, stateCode);
     if (xZipCodes !== state.zipCodes) {
@@ -81,11 +83,19 @@ async function synchronizeState(req_id, stateCode) {
   }
 
   if (result.changes.length > 0) {
-    console.log(
-      `Updates made to:`.yellow.bold,
-      `(${stateCode}) ${result.changes}`
-    );
-    const saved = await state.save();
+    try {
+      const saved = await state.save();
+
+      console.log(
+        `Updates made to:`.yellow.bold,
+        `(${saved.name}) ${result.changes}`
+      );
+    } catch (error) {
+      result.errors.push(error);
+      result.status = "Failed";
+      console.error(error);
+      return result;
+    }
   }
 
   return result;

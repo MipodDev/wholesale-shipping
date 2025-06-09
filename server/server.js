@@ -12,17 +12,22 @@ const installationRoute = require("./src/routes/installation.route");
 const listRoute = require("./src/routes/list.route");
 const ruleRoute = require("./src/routes/rule.route");
 const stateRoute = require("./src/routes/state.route");
+const productsRoute = require("./src/routes/products.route");
 
 const { test } = require("./src/test/test");
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Wholesale Shipping App");
+});
+
 app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
-app.use("/api/list", listRoute);
-app.use("/api/rule", ruleRoute);
-app.use("/api/state", stateRoute);
-
+app.use("/api/lists", listRoute);
+app.use("/api/rules", ruleRoute);
+app.use("/api/products", productsRoute);
+app.use("/api/states", stateRoute);
 
 app.get("/test", async (req, res) => {
   await test();

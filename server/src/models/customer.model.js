@@ -33,32 +33,33 @@ const RuleSchema = new Schema({
   lists: {
     type: [ListSchema],
   },
-
 });
 
-
-const customerSchema = new Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true,
+const customerSchema = new Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    customerNumber: {
+      type: String,
+    },
+    rules: {
+      type: [RuleSchema],
+    },
+    site: {
+      type: String,
+    },
   },
-  email: {
-    type: String,
-  },
-  phone: {
-    type: String,
-  },
-  customerNumber: {
-    type: String,
-  },
-  rules: {
-    type: [RuleSchema],
-  },
-  site: {
-    type: String,
-  },
-});
+  { timestamps: true }
+);
 
 const Customer = mongoose.model("Customer", customerSchema);
 
