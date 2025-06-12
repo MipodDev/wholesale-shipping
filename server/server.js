@@ -34,6 +34,7 @@ app.get("/test", async (req, res) => {
   await test();
   res.send("request received");
 });
+
 const clientDistPath = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDistPath));
 
