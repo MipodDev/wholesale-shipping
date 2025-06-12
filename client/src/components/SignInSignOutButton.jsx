@@ -32,15 +32,11 @@ const SignInSignOutButton = () => {
 
   return (
     <div className="flex items-center gap-4">
-      {isAuthenticated && account && (
-        <span className="text-white font-medium hidden sm:inline">
-          Hello, {account.name || account.username}
-        </span>
-      )}
+
       {!isAuthenticated ? (
         <button
           onClick={handleLoginPopup}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
         >
           Sign In
         </button>
@@ -49,7 +45,7 @@ const SignInSignOutButton = () => {
           onClick={handleLogoutPopup}
           className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
         >
-          Sign Out
+          🔒 Sign Out
         </button>
       )}
     </div>

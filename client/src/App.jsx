@@ -1,54 +1,44 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import States from "./pages/States";
-import SignInSignOutButton from "./components/SignInSignOutButton";
+import Rules from "./pages/Rules";
+import Services from "./pages/Services";
+import Customers from "./pages/Customers";
+import Products from "./pages/Products";
+import Sites from "./pages/Sites";
 import RequireAuth from "./components/RequireAuth";
-import { useIsAuthenticated } from "@azure/msal-react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function App() {
-  const isAuthenticated = useIsAuthenticated();
+function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
 
   return (
     <Router>
-      <nav className="p-4 bg-gray-800 text-white flex items-center justify-between">
-        {/* Title */}
-        <div className="text-xl font-semibold">Mi-Pod Shipping App</div>
-
-        {/* Links */}
-        <div className="flex gap-4">
-          <Link to="/" className="hover:underline">
-            Home
-          </Link>
-          <Link to="/about" className="hover:underline">
-            About
-          </Link>
-          {isAuthenticated && (
-            <Link to="/states" className="hover:underline">
-              States
-            </Link>
-          )}
-        </div>
-        <SignInSignOutButton />
-      </nav>
+      <Navbar toggleSidebar={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       <ToastContainer position="top-center" autoClose={3000} />
-
-      <div className="p-4">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route
-            path="/states"
-            element={
-              <RequireAuth>
-                <States />
-              </RequireAuth>
-            }
-          />
-        </Routes>
-      </div>
+      <main className="pt-16 pl-16 md:pl-64 transition-all duration-300">
+        <div className="p-4">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/states" element={<RequireAuth><States /></RequireAuth>} />
+            <Route path="/rules" element={<RequireAuth><Rules /></RequireAuth>} />
+            <Route path="/services" element={<RequireAuth><Services /></RequireAuth>} />
+            <Route path="/customers" element={<RequireAuth><Customers /></RequireAuth>} />
+            <Route path="/products" element={<RequireAuth><Products /></RequireAuth>} />
+            <Route path="/sites" element={<RequireAuth><Sites /></RequireAuth>} />
+          </Routes>
+        </div>
+      </main>
     </Router>
   );
 }
+
+export default App;
