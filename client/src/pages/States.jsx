@@ -1,3 +1,4 @@
+// /pages/States.jsx
 import StateSummary from "../components/StateSummary";
 import StateFilters from "../components/StateFilters";
 import StatesTable from "../components/StatesTable";
@@ -6,16 +7,20 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const StatesPage = () => {
-  const [states, setStates] = useState([]);
+  const [allStates, setAllStates] = useState([]);
   const [filteredStates, setFilteredStates] = useState([]);
   const [selectedState, setSelectedState] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loadStates = async () => {
     const res = await axios.get("/web/states");
-    console.log(res);
-    setStates(res.data);
-    setFilteredStates(res.data);
+    const cleaned = res.data.map((state) => ({
+      ...state,
+      services: Array.isArray(state.services) ? state.services : [],
+      rules: Array.isArray(state.rules) ? state.rules : [],
+    }));
+    setAllStates(cleaned);
+    setFilteredStates(cleaned);
   };
 
   useEffect(() => {
@@ -24,11 +29,8 @@ const StatesPage = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <StateSummary states={states} />
-      <StateFilters
-        states={states}
-        setFilteredStates={setFilteredStates}
-      />
+      <StateSummary states={allStates} />
+      <StateFilters states={allStates} setFilteredStates={setFilteredStates} />
       <StatesTable
         states={filteredStates}
         onView={(stateCode) => {

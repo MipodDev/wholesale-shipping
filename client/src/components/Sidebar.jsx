@@ -33,7 +33,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700 transition ${
         location.pathname === to ? "bg-gray-700 font-bold text-blue-400" : ""
       }`}
-      onClick={toggleSidebar}
+      onClick={() => {
+        if (!isOpen) toggleSidebar();
+      }}
     >
       {icon}
       {isOpen && <span>{label}</span>}
@@ -54,8 +56,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* Shipping */}
           {isAuthenticated && (
             <button
-              onClick={() => setShippingOpen(!shippingOpen)}
               className="flex items-center w-full gap-3 px-4 py-2 rounded hover:bg-gray-700 transition"
+              onClick={() => {
+                if (!isOpen) toggleSidebar();
+                setShippingOpen(!shippingOpen);
+              }}
             >
               <FiPackage />
               {isOpen && <span>Shipping</span>}
@@ -80,7 +85,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* Shopify */}
           {isAuthenticated && (
             <button
-              onClick={() => setShopifyOpen(!shopifyOpen)}
+              onClick={() => {
+                if (!isOpen) toggleSidebar();
+                setShopifyOpen(!shopifyOpen);
+              }}
               className="flex items-center w-full gap-3 px-4 py-2 rounded hover:bg-gray-700 transition"
             >
               <FiShoppingCart />
@@ -103,7 +111,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </div>
           )}
           {navItem("/about", <FiInfo />, "About")}
-
         </div>
 
         {isOpen && (

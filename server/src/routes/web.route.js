@@ -13,21 +13,20 @@ router.get("/states", async (req, res) => {
         code: 1,
         name: 1,
         status: 1,
-        "rules.name": 1,
+        rules: 1,
         zipCodes: 1,
         services: 1,
       }
     );
-    console.log("States in table:", states);
 
-    const simplified = states.map((state) => ({
-      code: state.code,
-      name: state.name,
-      status: state.status,
-      rules: (state.rules || []).map((r) => r.name),
-      zipCodes: (state.zipCodes || []).length,
-      services: (state.services || []).length,
-    }));
+const simplified = states.map((state) => ({
+  code: state.code,
+  name: state.name,
+  status: state.status,
+  rules: (state.rules || []).map((r) => ({ name: r.name })),
+  services: (state.services || []).map((s) => ({ name: s.name })),
+  zipCodes: (state.zipCodes || []).length,
+}));
 
     res.status(200).send(simplified);
   } catch (err) {
