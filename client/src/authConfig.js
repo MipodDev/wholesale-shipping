@@ -4,7 +4,7 @@ export const msalConfig = {
     auth: {
         clientId: import.meta.env.VITE_MSA_CLIENT_ID,
         authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MSA_TENANT}`,
-        redirectUri: "http://localhost:5173"
+        redirectUri: "https://wholesale-shipping-a37560cfc6bc.herokuapp.com/"
     },
     cache: {
         cacheLocation: "sessionStorage",
