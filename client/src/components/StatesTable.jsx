@@ -1,5 +1,4 @@
 // components/StatesTable.jsx
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const StatesTable = ({ states = [], onView }) => {
