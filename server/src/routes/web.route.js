@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const State = require("../models/state.model");
 const Rule = require("../models/rule.model");
+const Service = require("../models/service.model");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -48,7 +49,7 @@ router.get("/states/:stateCode", async (req, res) => {
   }
 });
 
-// GET /web/states
+// GET /web/rules
 router.get("/rules", async (req, res) => {
   const req_id = uuidv4();
   try {
@@ -62,7 +63,7 @@ router.get("/rules", async (req, res) => {
         states: 1,
         cities: 1,
         lists: 1,
-        skus: 1, 
+        skus: 1,
       }
     );
 
@@ -83,7 +84,7 @@ router.get("/rules", async (req, res) => {
   }
 });
 
-// GET /web/states/:stateCode
+// GET /web/rules/:rule_id
 router.get("/rules/:id", async (req, res) => {
   const rule_id = req.params.id;
   try {
@@ -92,6 +93,61 @@ router.get("/rules/:id", async (req, res) => {
     res.status(200).send(rule);
   } catch (err) {
     res.status(500).send({ message: "Error loading rule", err });
+  }
+});
+
+// GET /web/services
+router.get("/services", async (req, res) => {
+  const req_id = uuidv4();
+  try {
+    const services = await Service.find(
+      {},
+      {
+        id: 1,
+        name: 1,
+        description: 1,
+        provinces: 1,
+        minimum_order_value: 1,
+        price: 1,
+        free_shipping_threshold: 1,
+        per_box_value_set: 1,
+        service_name: 1,
+        service_code: 1,
+        for_zips: 1,
+        mapped_carrier: 1,
+      }
+    );
+
+    const simplified = services.map((service) => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      provinces: service.provinces,
+      minimum_order_value: service.minimum_order_value? service.minimum_order_value : 0,
+      price: service.price,
+      free_shipping_threshold: service.free_shipping_threshold? service.free_shipping_threshold : 0,
+      per_box_value_set: service.per_box_value_set ? `$${(service.per_box_value_set / 100).toFixed(2)}` : `unset`,
+      service_name: service.service_name,
+      service_code: service.service_code,
+      for_zips: service.for_zips,
+      mapped_carrier: service.mapped_carrier,
+    }));
+
+    res.status(200).send(simplified);
+  } catch (err) {
+    res.status(500).send({ message: "Failed to load services", err });
+  }
+});
+
+// GET /web/services/:service_id
+router.get("/services/:id", async (req, res) => {
+  const service_id = req.params.id;
+  try {
+    const service = await Service.findOne({ id: service_id });
+    if (!service) return res.status(404).send({ message: "Service not found" });
+    res.status(200).send(service);
+  } catch (err) {
+    res.status(500).send({ message: "Error loading service", err });
   }
 });
 
