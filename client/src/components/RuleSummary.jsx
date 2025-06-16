@@ -1,6 +1,4 @@
 // components/StateSummary.jsx
-import React from "react";
-
 const StateSummary = ({ rules }) => {
   if (!Array.isArray(rules)) return null;
 

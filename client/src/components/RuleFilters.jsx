@@ -1,5 +1,5 @@
 // components/StateFilters.jsx
-import React, { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { exportToCSV } from "../utils/exportToCSV";
 
 const RuleFilters = ({ rules = [], setFilteredRules }) => {

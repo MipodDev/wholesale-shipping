@@ -1,5 +1,5 @@
 // components/RuleModal.jsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 const RuleModal = ({ isOpen, ruleId, onClose }) => {

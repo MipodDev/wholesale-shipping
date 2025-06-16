@@ -1,10 +1,9 @@
-import React from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { loginRequest } from "../authConfig";
 
 const SignInSignOutButton = () => {
   const isAuthenticated = useIsAuthenticated();
-  const { instance, accounts } = useMsal();
+  const { instance } = useMsal();
 
   const handleLoginPopup = async () => {
     try {
@@ -28,7 +27,7 @@ const SignInSignOutButton = () => {
     }
   };
 
-  const account = accounts[0] || null;
+
 
   return (
     <div className="flex items-center gap-4">
