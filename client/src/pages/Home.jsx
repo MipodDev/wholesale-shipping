@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
 import {
   AuthenticatedTemplate,
@@ -53,4 +54,8 @@ export default function Home() {
       </UnauthenticatedTemplate>
     </>
   );
+=======
+export default function Home() {
+  return <h1 className="text-2xl font-bold">Home Page</h1>;
+>>>>>>> 9025168c189ed9e31da25462d329b262b51774fa
 }

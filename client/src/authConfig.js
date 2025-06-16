@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
@@ -53,14 +54,48 @@ export const msalConfig = {
  * For more information about OIDC scopes, visit: 
  * https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#openid-connect-scopes
  */
+=======
+import { LogLevel } from "@azure/msal-browser";
+
+export const msalConfig = {
+    auth: {
+        clientId: import.meta.env.VITE_MSA_CLIENT_ID,
+        authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MSA_TENANT}`,
+        redirectUri: "http://localhost:5173"
+    },
+    cache: {
+        cacheLocation: "localStorage",
+        storeAuthStateInCookie: false,
+    },
+    system: {
+        loggerOptions: {
+            loggerCallback: (level, message, containsPii) => {
+                if (containsPii) return;
+                switch (level) {
+                    case LogLevel.Error: console.error(message); break;
+                    case LogLevel.Info: console.info(message); break;
+                    case LogLevel.Verbose: console.debug(message); break;
+                    case LogLevel.Warning: console.warn(message); break;
+                }
+            }
+        }
+    }
+};
+
+>>>>>>> 9025168c189ed9e31da25462d329b262b51774fa
 export const loginRequest = {
     scopes: ["User.Read"]
 };
 
+<<<<<<< HEAD
 /**
  * Add here the scopes to request when obtaining an access token for MS Graph API. For more information, see:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/resources-and-scopes.md
  */
 export const graphConfig = {
     graphMeEndpoint: "https://graph.microsoft.com/v1.0/me" //e.g. https://graph.microsoft.com/v1.0/me
+=======
+export const graphConfig = {
+    graphMeEndpoint: "https://graph.microsoft.com/v1.0/me"
+>>>>>>> 9025168c189ed9e31da25462d329b262b51774fa
 };
