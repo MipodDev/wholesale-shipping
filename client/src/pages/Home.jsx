@@ -56,6 +56,7 @@ export default function Home() {
   );
 =======
 export default function Home() {
-  return <h1 className="text-2xl font-bold">Home Page</h1>;
->>>>>>> 9025168c189ed9e31da25462d329b262b51774fa
+  return <><h1 className="text-2xl font-bold">Home Page</h1>    <p>Work in progress</p>
+  </>;
+;
 }
