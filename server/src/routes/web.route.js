@@ -4,6 +4,7 @@ const State = require("../models/state.model");
 const Rule = require("../models/rule.model");
 const Service = require("../models/service.model");
 const Product = require("../models/product.model");
+const Customer = require("../models/customer.model");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -282,8 +283,38 @@ router.get("/products/:product_id", async (req, res) => {
   }
 });
 
-router.post("/sync/:table", async (req, res) => {
-  
+router.get("/customers", async (req, res) => {
+  const customers = await Customer.find();
+  res.send({customers, total: customers.length});
+});
+router.post("/customers/search", async (req, res) => {
+  const { filters = {}, skip = 0, limit = 25 } = req.body;
+  const query = {};
+
+  if (filters.query) {
+    const regex = new RegExp(filters.query, "i");
+    query.$or = [{ email: regex }, { phone: regex }];
+  }
+
+  if (filters.site?.length) {
+    query.site = { $in: filters.site };
+  }
+
+  if (filters.hasCustomerNumber === true) {
+    query.customerNumber = { $ne: null };
+  } else if (filters.hasCustomerNumber === false) {
+    query.customerNumber = null;
+  }
+
+  try {
+    const [customers, total] = await Promise.all([
+      Customer.find(query).skip(skip).limit(limit),
+      Customer.countDocuments(query),
+    ]);
+    res.json({ customers, total });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load customers" });
+  }
 });
 
 module.exports = router;

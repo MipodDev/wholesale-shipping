@@ -260,6 +260,13 @@ Content-Type: application/json
 
 
 ###
+
+GET http://localhost:3000/web/customers
+Content-Type: application/json
+
+
+
+###
 #
 # Test
 #

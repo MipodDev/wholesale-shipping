@@ -9,15 +9,13 @@ const Services = () => {
     setAllServices(res.data);
   };
 
-    useEffect(() => {
+  useEffect(() => {
     loadServices();
   }, []);
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold no-caret">Services Page</h1>{" "}
-      <ServicesList
-        services={allServices}
-      />
+      <h1 className="text-2xl font-bold no-caret text-white">Services Page</h1>{" "}
+      <ServicesList services={allServices} />
     </div>
   );
 };
