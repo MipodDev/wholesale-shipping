@@ -3,6 +3,7 @@ const router = express.Router();
 const State = require("../models/state.model");
 const Rule = require("../models/rule.model");
 const Service = require("../models/service.model");
+const Product = require("../models/product.model");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -123,10 +124,16 @@ router.get("/services", async (req, res) => {
       name: service.name,
       description: service.description,
       provinces: service.provinces,
-      minimum_order_value: service.minimum_order_value? service.minimum_order_value : 0,
+      minimum_order_value: service.minimum_order_value
+        ? service.minimum_order_value
+        : 0,
       price: service.price,
-      free_shipping_threshold: service.free_shipping_threshold? service.free_shipping_threshold : 0,
-      per_box_value_set: service.per_box_value_set ? `$${(service.per_box_value_set / 100).toFixed(2)}` : `unset`,
+      free_shipping_threshold: service.free_shipping_threshold
+        ? service.free_shipping_threshold
+        : 0,
+      per_box_value_set: service.per_box_value_set
+        ? `$${(service.per_box_value_set / 100).toFixed(2)}`
+        : `unset`,
       service_name: service.service_name,
       service_code: service.service_code,
       for_zips: service.for_zips,
@@ -149,6 +156,134 @@ router.get("/services/:id", async (req, res) => {
   } catch (err) {
     res.status(500).send({ message: "Error loading service", err });
   }
+});
+// GET /web/products
+router.get("/products", async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 25;
+  const skip = (page - 1) * pageSize;
+
+  const [products, total] = await Promise.all([
+    Product.find().skip(skip).limit(pageSize),
+    Product.countDocuments(),
+  ]);
+
+  res.json(products);
+});
+
+// POST /web/products/summary
+router.post("/products/summary", async (req, res) => {
+  const { filters = {} } = req.body;
+
+  const query = {};
+
+  if (filters.query) {
+    const q = new RegExp(filters.query, "i");
+    query.$or = [{ title: { $regex: q } }, { unique_skus: { $regex: q } }];
+  }
+
+  if (filters.status?.length) {
+    query.status = { $in: filters.status };
+  }
+
+  if (filters.category?.length) {
+    query.category = { $in: filters.category };
+  }
+
+  if (filters.tags?.length) {
+    query.tags = { $in: filters.tags };
+  }
+
+  try {
+    const all = await Product.find(query);
+    const total = all.length;
+    const active = all.filter((p) => p.status === "ACTIVE").length;
+    const inactive = all.filter((p) => p.status !== "ACTIVE").length;
+    const unclassified = all.filter((p) => !p.tags?.length).length;
+
+    res.json({ total, active, inactive, unclassified });
+  } catch (err) {
+    console.error("Summary error:", err);
+    res.status(500).json({ error: "Failed to get summary" });
+  }
+});
+
+// routes/products.js
+router.get("/products/filters", async (req, res) => {
+  try {
+    const [statuses, categories, rawTags] = await Promise.all([
+      Product.aggregate([
+        { $match: { status: { $ne: null } } },
+        { $group: { _id: "$status" } },
+      ]),
+      Product.aggregate([
+        { $match: { category: { $ne: null } } },
+        { $group: { _id: "$category" } },
+      ]),
+      Product.aggregate([
+        { $unwind: "$tags" },
+        { $match: { tags: { $ne: null } } },
+        { $group: { _id: "$tags" } },
+      ]),
+    ]);
+
+    res.json({
+      statuses: statuses.map((s) => s._id),
+      categories: categories.map((c) => c._id),
+      tags: rawTags.map((t) => t._id),
+    });
+  } catch (err) {
+    console.error("Error in /products/filters:", err);
+    res.status(500).json({ error: "Failed to load filter options" });
+  }
+});
+
+// POST /web/products/search
+router.post("/products/search", async (req, res) => {
+  const { filters = {}, skip = 0, limit = 25 } = req.body;
+
+  const query = {};
+
+  if (filters.query) {
+    const q = new RegExp(filters.query, "i");
+    query.$or = [{ title: { $regex: q } }, { unique_skus: { $regex: q } }];
+  }
+
+  if (filters.status?.length) {
+    query.status = { $in: filters.status };
+  }
+
+  if (filters.category?.length) {
+    query.category = { $in: filters.category };
+  }
+
+  if (filters.tags?.length) {
+    query.tags = { $in: filters.tags };
+  }
+
+  try {
+    const products = await Product.find(query).skip(skip).limit(limit);
+    res.json(products);
+  } catch (err) {
+    console.error("Search error:", err);
+    res.status(500).json({ error: "Failed to search products" });
+  }
+});
+
+// GET /web/products/:product_id
+router.get("/products/:product_id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.product_id);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+    res.json(product);
+  } catch (err) {
+    console.error("Error fetching product by ID:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/sync/:table", async (req, res) => {
+  
 });
 
 module.exports = router;

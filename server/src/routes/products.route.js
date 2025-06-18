@@ -4,6 +4,7 @@ const colors = require("colors");
 const { v4: uuidv4 } = require("uuid");
 const { synchronizeProducts, synchronizeOneProduct } = require("../services/product.service");
 
+// POST /api/products/synchronize/:site
 router.post("/synchronize/:site", async (req, res) => {
   const site = req.params.site;
   const req_id = uuidv4();
