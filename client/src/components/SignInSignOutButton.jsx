@@ -35,7 +35,7 @@ const SignInSignOutButton = () => {
       {!isAuthenticated ? (
         <button
           onClick={handleLoginPopup}
-          className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition"
+          className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition"
         >
           Sign In
         </button>

@@ -30,8 +30,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navItem = (to, icon, label) => (
     <Link
       to={to}
-      className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-gray-700 transition ${
-        location.pathname === to ? "bg-gray-700 font-bold text-blue-400" : ""
+      className={`flex items-center gap-3 px-4 py-2 rounded hover:bg-zinc-700 transition ${
+        location.pathname === to ? "bg-zinc-700 font-bold text-purple-400" : ""
       }`}
       onClick={() => {
         if (!isOpen) toggleSidebar();
@@ -44,7 +44,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-full bg-gray-800 text-white shadow-lg z-40 transition-all duration-300 ${
+      className={`fixed top-0 left-0 h-full bg-zinc-800 text-white shadow-lg z-40 transition-all duration-300 ${
         isOpen ? "w-64" : "w-16"
       }`}
     >
@@ -56,7 +56,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* Shipping */}
           {isAuthenticated && (
             <button
-              className="flex items-center w-full gap-3 px-4 py-2 rounded hover:bg-gray-700 transition"
+              className="flex items-center w-full gap-3 px-4 py-2 rounded hover:bg-zinc-700 transition"
               onClick={() => {
                 if (!isOpen) toggleSidebar();
                 setShippingOpen(!shippingOpen);
@@ -89,7 +89,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 if (!isOpen) toggleSidebar();
                 setShopifyOpen(!shopifyOpen);
               }}
-              className="flex items-center w-full gap-3 px-4 py-2 rounded hover:bg-gray-700 transition"
+              className="flex items-center w-full gap-3 px-4 py-2 rounded hover:bg-zinc-700 transition"
             >
               <FiShoppingCart />
               {isOpen && <span>Shopify</span>}
@@ -114,7 +114,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </div>
 
         {isOpen && (
-          <div className="border-t border-gray-700 mt-auto px-2 py-4 flex flex-col items-center space-y-2">
+          <div className="border-t border-zinc-700 mt-auto px-2 py-4 flex flex-col items-center space-y-2">
             {isAuthenticated && (
               <div className="text-sm text-center px-2">
                 Hello,

@@ -1,6 +1,7 @@
-// components/StateFilters.jsx
 import React, { useState, useMemo, useEffect } from "react";
 import { exportToCSV } from "../utils/exportToCSV";
+import { FiRefreshCw, FiDownload, FiRepeat } from "react-icons/fi";
+import axios from "axios";
 
 const StateFilters = ({ states = [], setFilteredStates }) => {
   const [query, setQuery] = useState("");
@@ -8,67 +9,47 @@ const StateFilters = ({ states = [], setFilteredStates }) => {
   const [ruleFilter, setRuleFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
 
-  const allRules = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          states.flatMap((s) =>
-            Array.isArray(s?.rules) ? s.rules.map((rule) => rule.name) : []
-          )
-        )
-      ),
-    [states]
-  );
+  const allRules = useMemo(() =>
+    Array.from(new Set(states.flatMap((s) => s?.rules?.map((r) => r.name) || [])))
+  , [states]);
 
-  const allServices = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          states.flatMap((s) =>
-            Array.isArray(s?.services) ? s.services.map((svc) => svc.name) : []
-          )
-        )
-      ),
-    [states]
-  );
+  const allServices = useMemo(() =>
+    Array.from(new Set(states.flatMap((s) => s?.services?.map((svc) => svc.name) || [])))
+  , [states]);
 
-  const allStatuses = useMemo(
-    () =>
-      Array.from(new Set((states || []).map((s) => s?.status).filter(Boolean))),
-    [states]
-  );
+  const allStatuses = useMemo(() =>
+    Array.from(new Set(states.map((s) => s?.status).filter(Boolean)))
+  , [states]);
 
   const applyFilters = () => {
     let result = [...states];
+
     if (query) {
       const q = query.toLowerCase();
       result = result.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
+        (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
       );
     }
+
     if (statusFilter) {
       result = result.filter((s) => s.status === statusFilter);
     }
+
     if (ruleFilter) {
       result = result.filter((s) =>
         s.rules?.some((r) => r.name === ruleFilter)
       );
-      result = result.filter(
-        (s) =>
-          Array.isArray(s.rules) &&
-          s.rules.some((r) => ruleFilter.includes(r.name))
-      );
     }
+
     if (serviceFilter) {
-      result = result.filter(
-        (s) =>
-          Array.isArray(s.services) &&
-          s.services.some((svc) => serviceFilter.includes(svc.name))
+      result = result.filter((s) =>
+        s.services?.some((svc) => svc.name === serviceFilter)
       );
     }
+
     setFilteredStates(result);
   };
+
   useEffect(() => {
     applyFilters();
   }, [query, statusFilter, ruleFilter, serviceFilter, states]);
@@ -81,75 +62,83 @@ const StateFilters = ({ states = [], setFilteredStates }) => {
     setFilteredStates(states);
   };
 
+const handleSynchronize = async () => {
+  try {
+    const res = await axios.post("/api/states/synchronize/B2B");
+    alert(res.data.message || "Synchronization started!");
+  } catch (err) {
+    console.error("Synchronization failed:", err);
+    alert("Failed to initiate synchronization.");
+  }
+};
+
+
   return (
-    <div className="bg-white/60 backdrop-blur-md border border-gray-200 rounded-lg p-4 mb-4 shadow-inner">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 mb-4 shadow-sm">
       <div className="flex flex-wrap gap-4 items-center">
         <input
           type="text"
-          placeholder="Search by name or code"
-          className="border p-2 rounded w-60"
+          placeholder="🔍 Search by name or code"
+          className="bg-zinc-800 text-white placeholder-zinc-400 px-4 py-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-          }}
+          onChange={(e) => setQuery(e.target.value)}
         />
 
         <select
-          className="no-caret border p-2 rounded"
+          className="bg-zinc-800 text-white px-4 py-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-          }}
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="">All Statuses</option>
           {allStatuses.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
+            <option key={status} value={status}>{status}</option>
           ))}
         </select>
 
         <select
-          className="no-caret border p-2 rounded"
+          className="bg-zinc-800 text-white px-4 py-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={ruleFilter}
-          onChange={(e) => {
-            setRuleFilter(e.target.value);
-          }}
+          onChange={(e) => setRuleFilter(e.target.value)}
         >
           <option value="">All Rules</option>
           {allRules.map((rule) => (
-            <option key={rule} value={rule}>
-              {rule}
-            </option>
+            <option key={rule} value={rule}>{rule}</option>
           ))}
         </select>
 
         <select
-          className="no-caret border p-2 rounded"
+          className="bg-zinc-800 text-white px-4 py-2 rounded-md border border-zinc-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
           value={serviceFilter}
-          onChange={(e) => {
-            setServiceFilter(e.target.value);
-          }}
+          onChange={(e) => setServiceFilter(e.target.value)}
         >
           <option value="">All Services</option>
-          {allServices.map((service) => (
-            <option key={service} value={service}>
-              {service}
-            </option>
+          {allServices.map((svc) => (
+            <option key={svc} value={svc}>{svc}</option>
           ))}
         </select>
 
         <button
           onClick={clearFilters}
-          className="no-caret bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+          className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-white px-4 py-2 rounded-md transition"
         >
+          <FiRefreshCw className="text-purple-400" />
           Clear
         </button>
+
         <button
           onClick={() => exportToCSV(states, "FilteredStates.csv")}
-          className="no-caret bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition"
         >
-          Export to CSV
+          <FiDownload />
+          Export CSV
+        </button>
+
+        <button
+          onClick={handleSynchronize}
+          className="flex items-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-md transition"
+        >
+          <FiRepeat />
+          Synchronize
         </button>
       </div>
     </div>

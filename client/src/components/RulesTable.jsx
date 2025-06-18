@@ -5,22 +5,22 @@ const RulesTable = ({ rules = [], onView }) => {
   if (!Array.isArray(rules)) return null;
 
   return (
-    <div className="no-caret overflow-x-auto rounded shadow bg-white/60 backdrop-blur-md border border-gray-200">
-      <table className="min-w-full table-auto divide-y divide-gray-200">
-        <thead className="bg-gray-200">
+    <div className="overflow-x-auto rounded-xl shadow border border-zinc-700 bg-zinc-900">
+      <table className="min-w-full table-auto divide-y divide-zinc-700 text-sm text-zinc-100">
+        <thead className="bg-zinc-800 text-zinc-300">
           <tr>
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2 text-left">Range</th>
-            <th className="p-2 text-left">Type</th>
-            <th className="p-2 text-left">States</th>
-            <th className="p-2 text-left">Cities</th>
-            <th className="p-2 text-left">Zip Codes</th>
-            <th className="p-2 text-left">Product Lists</th>
-            <th className="p-2 text-left">Skus</th>
-            <th className="p-2 text-left"></th>
+            <th className="p-3 text-left font-medium">Name</th>
+            <th className="p-3 text-left font-medium">Range</th>
+            <th className="p-3 text-left font-medium">Type</th>
+            <th className="p-3 text-left font-medium">States</th>
+            <th className="p-3 text-left font-medium">Cities</th>
+            <th className="p-3 text-left font-medium">Zip Codes</th>
+            <th className="p-3 text-left font-medium">Product Lists</th>
+            <th className="p-3 text-left font-medium">SKUs</th>
+            <th className="p-3 text-left font-medium"></th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-zinc-800">
           <AnimatePresence>
             {rules.map((r) => (
               <motion.tr
@@ -30,43 +30,48 @@ const RulesTable = ({ rules = [], onView }) => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.2 }}
-                className="border-b"
+                className="hover:bg-zinc-800/70"
               >
-                <td className="p-2">{r.name}</td>
-                <td className="p-2">{r.range}</td>
-                <td className="p-2">
-                  {r.type === "Registry" && "⚠️ Registry"}
-                  {r.type === "Ban" && "❌ Ban"}
-                  {r.type === "Exemption" && "✅ Exemption"}
+                <td className="p-3">{r.name}</td>
+                <td className="p-3 capitalize">{r.range}</td>
+                <td className="p-3">
+                  {r.type === "Registry" && (
+                    <span className="text-yellow-400">⚠️ Registry</span>
+                  )}
+                  {r.type === "Ban" && (
+                    <span className="text-red-400">❌ Ban</span>
+                  )}
+                  {r.type === "Exemption" && (
+                    <span className="text-green-400">✅ Exemption</span>
+                  )}
                 </td>
-                <td className="px-4 py-2">
-                  {r.states?.map((state) => (
+                <td className="p-3">
+                  {r.states?.map((s) => (
                     <span
-                      key={state.code}
-                      className="inline-block bg-gray-200 rounded px-2 py-1 text-xs mr-1"
+                      key={s.code}
+                      className="inline-block bg-zinc-800 text-zinc-300 border border-zinc-600 rounded px-2 py-0.5 text-xs mr-1"
                     >
-                      {state.name} ({state.code})
+                      {s.name} ({s.code})
                     </span>
                   ))}
                 </td>
-                <td className="p-2">{r.cities? r.cities.length : 0}</td>
-                <td className="p-2">{r.zipCodes? r.zipCodes.length : 0}</td>
-                <td className="px-4 py-2">
+                <td className="p-3">{r.cities?.length || 0}</td>
+                <td className="p-3">{r.zipCodes?.length || 0}</td>
+                <td className="p-3">
                   {r.lists?.map((list) => (
                     <span
                       key={list.id}
-                      className="inline-block bg-gray-200 rounded px-2 py-1 text-xs mr-1"
+                      className="inline-block bg-purple-900/60 text-purple-300 border border-purple-800 rounded px-2 py-0.5 text-xs mr-1"
                     >
                       {list.name}
                     </span>
                   ))}
                 </td>
-                <td className="p-2">{r.skus.length}</td>
-
-                <td className="p-2">
+                <td className="p-3">{r.skus?.length || 0}</td>
+                <td className="p-3">
                   <button
                     onClick={() => onView(r.id)}
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-400 hover:text-blue-300 transition"
                   >
                     View
                   </button>

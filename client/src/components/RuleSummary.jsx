@@ -1,36 +1,53 @@
-// components/StateSummary.jsx
-const StateSummary = ({ rules }) => {
+import { FaBan, FaCheckCircle, FaExclamationTriangle, FaBalanceScale } from "react-icons/fa";
+
+const RuleSummary = ({ rules }) => {
   if (!Array.isArray(rules)) return null;
 
   const total = rules.length;
-  const banned = rules.filter((r) => r.type === "enabled").length;
-  const exempt = rules.filter((r) => r.type === "enabled").length;
-  const registries = rules.filter((r) => r.type === "disabled").length;
-  //   const ruleCount = rules.reduce((acc, r) => acc + (r.rules?.length || 0), 0);
+  const bans = rules.filter((r) => r.type.toLowerCase() === "ban").length;
+  const exemptions = rules.filter((r) => r.type.toLowerCase() === "exemption").length;
+  const registries = rules.filter((r) => r.type.toLowerCase() === "registry").length;
+
+  const cardClass =
+    "flex items-center justify-between bg-zinc-900 border border-zinc-700 text-white rounded-xl px-5 py-4 shadow";
+
+  const iconClass = "text-3xl";
 
   return (
-    <div className="mb-6 no-caret">
-      <h1 className="text-3xl font-bold mb-4">Rules</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Total Rules</h2>
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className={cardClass}>
+        <div>
+          <p className="text-sm text-zinc-400">Total Rules</p>
           <p className="text-2xl font-bold">{total}</p>
         </div>
-        <div className="bg-red-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Bans</h2>
-          <p className="text-2xl font-bold">{banned}</p>
+        <FaBalanceScale className={`${iconClass} text-zinc-400`} />
+      </div>
+
+      <div className={cardClass}>
+        <div>
+          <p className="text-sm text-zinc-400">Bans</p>
+          <p className="text-2xl font-bold text-red-400">{bans}</p>
         </div>
-        <div className="bg-orange-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Registries</h2>
-          <p className="text-2xl font-bold">{registries}</p>
+        <FaBan className={`${iconClass} text-red-400`} />
+      </div>
+
+      <div className={cardClass}>
+        <div>
+          <p className="text-sm text-zinc-400">Registries</p>
+          <p className="text-2xl font-bold text-amber-400">{registries}</p>
         </div>
-        <div className="bg-green-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Exemptions</h2>
-          <p className="text-2xl font-bold">{exempt}</p>
+        <FaExclamationTriangle className={`${iconClass} text-amber-400`} />
+      </div>
+
+      <div className={cardClass}>
+        <div>
+          <p className="text-sm text-zinc-400">Exemptions</p>
+          <p className="text-2xl font-bold text-green-400">{exemptions}</p>
         </div>
+        <FaCheckCircle className={`${iconClass} text-green-400`} />
       </div>
     </div>
   );
 };
 
-export default StateSummary;
+export default RuleSummary;

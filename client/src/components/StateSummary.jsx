@@ -1,35 +1,57 @@
-// components/StateSummary.jsx
-import React from "react";
+import { FiCheckCircle, FiXCircle, FiMap } from "react-icons/fi";
+import { MdGavel } from "react-icons/md";
+import CountUp from "react-countup";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
-const StateSummary = ({ states }) => {
-  if (!Array.isArray(states)) return null;
+const InfoCard = ({ label, icon, value, color, loading }) => (
+  <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 flex items-center gap-4 w-full sm:w-60">
+    <div className={`text-2xl ${color}`}>{icon}</div>
+    <div>
+      <div className="text-zinc-400 text-sm">{label}</div>
+      <div className="text-white text-xl font-semibold">
+        {loading ? <Skeleton width={50} /> : <CountUp end={value} duration={1.5} />}
+      </div>
+    </div>
+  </div>
+);
 
-  const total = states.length;
-  const enabled = states.filter(s => s.status === "enabled").length;
-  const disabled = states.filter(s => s.status === "disabled").length;
-  const ruleCount = states.reduce((acc, s) => acc + (s.rules?.length || 0), 0);
+const StateSummary = ({ states = [], isLoading }) => {
+  const total = states?.length || 0;
+  const enabled = states?.filter((s) => s.status === "enabled")?.length || 0;
+  const disabled = states?.filter((s) => s.status === "disabled")?.length || 0;
+  const withRules = states?.filter((s) => s.rules?.length > 0)?.length || 0;
 
   return (
-    <div className="mb-6 no-caret">
-      <h1 className="text-3xl font-bold mb-4">States</h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Total States</h2>
-          <p className="text-2xl font-bold">{total}</p>
-        </div>
-        <div className="bg-green-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Enabled</h2>
-          <p className="text-2xl font-bold">{enabled}</p>
-        </div>
-        <div className="bg-red-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Disabled</h2>
-          <p className="text-2xl font-bold">{disabled}</p>
-        </div>
-        <div className="bg-blue-100 p-4 rounded shadow">
-          <h2 className="text-lg font-semibold">Total Rules</h2>
-          <p className="text-2xl font-bold">{ruleCount}</p>
-        </div>
-      </div>
+    <div className="flex flex-wrap gap-4 mb-6">
+      <InfoCard
+        label="Total States"
+        value={total}
+        icon={<FiMap />}
+        color="text-zinc-400"
+        loading={isLoading}
+      />
+      <InfoCard
+        label="Enabled"
+        value={enabled}
+        icon={<FiCheckCircle />}
+        color="text-green-400"
+        loading={isLoading}
+      />
+      <InfoCard
+        label="Disabled"
+        value={disabled}
+        icon={<FiXCircle />}
+        color="text-red-400"
+        loading={isLoading}
+      />
+      <InfoCard
+        label="With Rules"
+        value={withRules}
+        icon={<MdGavel />}
+        color="text-yellow-400"
+        loading={isLoading}
+      />
     </div>
   );
 };
