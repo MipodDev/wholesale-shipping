@@ -157,6 +157,7 @@ Content-Type: application/json
   ],
   "skus": []
 }
+
 ###
 PATCH http://localhost:3000/api/rules/f658f268-9aea-4dc8-8a5d-6288cfb1ee75
 Content-Type: application/json
@@ -240,6 +241,22 @@ Content-Type: application/json
 
 POST http://localhost:3000/api/lists/synchronize/fc252a31-1365-4e67-83ab-9c8f33320ca4
 Content-Type: application/json
+
+
+###
+#
+# Web
+#
+###
+
+GET http://localhost:3000/web/products
+Content-Type: application/json
+
+###
+
+GET http://localhost:3000/web/rules
+Content-Type: application/json
+
 
 
 ###
