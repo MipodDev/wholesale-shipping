@@ -8,7 +8,9 @@ import {
   FiUsers,
   FiBox,
   FiGlobe,
+  FiTable  ,
   FiChevronRight,
+  FiCrosshair
 } from "react-icons/fi";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import SignInSignOutButton from "./SignInSignOutButton";
@@ -79,7 +81,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               {navItem("/states", <FiGlobe />, "States")}
               {navItem("/rules", <FiBox />, "Rules")}
               {navItem("/services", <FiPackage />, "Services")}
-              {navItem("/lists", <FiPackage />, "Lists")}
+              {navItem("/lists", <FiTable   />, "Lists")}
+              {navItem("/rates", <FiCrosshair   />, "Rates")}
             </div>
           )}
 
