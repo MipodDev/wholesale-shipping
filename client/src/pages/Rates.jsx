@@ -207,6 +207,7 @@ export default function Rates() {
   return (
     <div className="text-white max-w-5xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">Rate Testing</h1>
+      {selectedState && <StateDetails state={selectedState} />}
 
       <div className="mb-10">
         <h2 className="text-xl font-semibold mb-2">Destination Info</h2>
@@ -350,7 +351,6 @@ export default function Rates() {
       >
         Fetch Rates
       </button>
-      {selectedState && <StateDetails state={selectedState} />}
 
       <hr className="mb-6" />
       <AvailableRates rates={rates} requested={requested} />
