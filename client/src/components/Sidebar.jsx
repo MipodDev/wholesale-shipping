@@ -79,6 +79,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               {navItem("/states", <FiGlobe />, "States")}
               {navItem("/rules", <FiBox />, "Rules")}
               {navItem("/services", <FiPackage />, "Services")}
+              {navItem("/lists", <FiPackage />, "Lists")}
             </div>
           )}
 

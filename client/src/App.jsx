@@ -11,6 +11,7 @@ import Customers from "./pages/Customers";
 import Products from "./pages/Products";
 import Sites from "./pages/Sites";
 import RequireAuth from "./components/RequireAuth";
+import ProductList from "./pages/Lists";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -30,6 +31,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/states" element={<RequireAuth><States /></RequireAuth>} />
             <Route path="/rules" element={<RequireAuth><Rules /></RequireAuth>} />
+            <Route path="/lists" element={<RequireAuth><ProductList /></RequireAuth>} />
             <Route path="/services" element={<RequireAuth><Services /></RequireAuth>} />
             <Route path="/customers" element={<RequireAuth><Customers /></RequireAuth>} />
             <Route path="/products" element={<RequireAuth><Products /></RequireAuth>} />

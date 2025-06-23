@@ -5,6 +5,7 @@ const Rule = require("../models/rule.model");
 const Service = require("../models/service.model");
 const Product = require("../models/product.model");
 const Customer = require("../models/customer.model");
+const List = require("../models/list.model");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -158,6 +159,7 @@ router.get("/services/:id", async (req, res) => {
     res.status(500).send({ message: "Error loading service", err });
   }
 });
+
 // GET /web/products
 router.get("/products", async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -285,7 +287,7 @@ router.get("/products/:product_id", async (req, res) => {
 
 router.get("/customers", async (req, res) => {
   const customers = await Customer.find();
-  res.send({customers, total: customers.length});
+  res.send({ customers, total: customers.length });
 });
 router.post("/customers/search", async (req, res) => {
   const { filters = {}, skip = 0, limit = 25 } = req.body;
@@ -316,5 +318,100 @@ router.post("/customers/search", async (req, res) => {
     res.status(500).json({ error: "Failed to load customers" });
   }
 });
+
+router.get("/lists", async (req, res) => {
+  try {
+    const lists = await List.find(
+      {},
+      {
+        id: 1,
+        name: 1,
+        category: 1,
+        skus: 1,
+        include: 1,
+        exclude: 1,
+      }
+    );
+    const simplified = lists.map((list) => ({
+      id: list.id,
+      name: list.name,
+      category: list.category,
+      skus: list.skus ? list.skus.length : 0,
+      include: list.include,
+      exclude: list.exclude,
+    }));
+
+    res.status(200).send(simplified);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+router.get("/lists/:list_id", async (req, res) => {
+  const list_id = req.params.list_id;
+
+  try {
+    const list = await List.findOne({ id: list_id });
+    res.status(200).send(list);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// POST /web/lists
+router.post("/lists", async (req, res) => {
+  const { name, category, skus, include, exclude, products } = req.body;
+
+  try {
+    const newList = new List({
+      id: uuidv4(),
+      name,
+      category,
+      skus: skus || [],
+      include: include || [],
+      exclude: exclude || [],
+      products: products || [],
+    });
+
+    await newList.save();
+    res.status(201).json({ message: "List created successfully", list: newList });
+  } catch (err) {
+    console.error("Error creating list:", err);
+    res.status(500).json({ message: "Failed to create list", error: err });
+  }
+});
+
+// PUT /web/lists/:list_id
+router.put("/lists/:list_id", async (req, res) => {
+  const list_id = req.params.list_id;
+  const { name, category, skus, include, exclude, products } = req.body;
+
+  try {
+    const updated = await List.findOneAndUpdate(
+      { id: list_id },
+      {
+        $set: {
+          name,
+          category,
+          skus: skus || [],
+          include: include || [],
+          exclude: exclude || [],
+          products: products || [],
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "List not found" });
+    }
+
+    res.json({ message: "List updated successfully", list: updated });
+  } catch (err) {
+    console.error("Error updating list:", err);
+    res.status(500).json({ message: "Failed to update list", error: err });
+  }
+});
+
 
 module.exports = router;

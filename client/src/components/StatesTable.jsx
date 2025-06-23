@@ -18,7 +18,7 @@ const StatesTable = ({ states = [], onView }) => {
             <th className="p-3">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-zinc-800">
           <AnimatePresence>
             {states.map((s) => (
               <motion.tr
