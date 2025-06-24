@@ -9,7 +9,7 @@ const collection = process.env.DB_COLLECTION;
 const uri = `mongodb+srv://${db_username}:${db_password}@shopify-integrations.xbkpui0.mongodb.net/${collection}?retryWrites=true&w=majority&appName=shopify-integrations`;
 
 const clientOptions = {
-  serverApi: { version: "1", strict: true, deprecationErrors: true },
+  serverApi: { version: "1", strict: false, deprecationErrors: true },
 };
 
 async function connect() {

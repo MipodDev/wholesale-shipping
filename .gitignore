@@ -2,3 +2,5 @@
 /node_modules
 /app/exports
 /app/test
+/requests.rest
+client/.env

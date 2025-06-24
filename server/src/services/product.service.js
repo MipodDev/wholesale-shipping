@@ -5,11 +5,11 @@ const {
 } = require("../graphql/products");
 const productData = require("../models/product.model");
 
+/**
+ * Main synchronization entry point
+ */
 async function synchronizeProducts(req_id, site) {
-  console.log(
-    `[${req_id}] Initializing Product Synchronization for:`.blue.bold,
-    site
-  );
+  console.log(`[${req_id}] Initializing Product Sync for:`.blue.bold, site);
 
   let response = {
     req_id,
@@ -18,247 +18,156 @@ async function synchronizeProducts(req_id, site) {
     synchronized: 0,
     errors: [],
   };
-  // Retreive Product Data from Targeted Site
-  let products = null;
+
+  let products;
   try {
     products = await getAllProductData(req_id, site);
     response.products = products.count;
-    console.log(
-      `[${req_id}] Products found for ${site}:`.green.bold,
-      products.count
-    );
-  } catch (error) {
-    console.error(
-      `[${req_id}] Error retreiving Products for ${site}:`.red.bold,
-      error
-    );
-    response.errors.push(error);
+    console.log(`[${req_id}] Products found:`.green.bold, products.count);
+  } catch (err) {
+    console.error(`[${req_id}] Error fetching products:`.red.bold, err);
+    response.errors.push(err);
     return response;
-  }
-  if (!products) {
-    response.errors.push("No Products found");
-    return response;
-  }
-  // Save Product Data to Database
-  for (let i = 0; i < products.data.length; i++) {
-    console.log(
-      `[${req_id}] (${i + 1}/${products.data.length}) Synchronizing...`.yellow
-        .bold
-    );
-    try {
-      const saved = await synchronizeOneProduct(
-        req_id,
-        site,
-        products.data[i].id
-      );
-      if (saved) {
-        response.synchronized++;
-      }
-    } catch (error) {
-      console.error(
-        `[${req_id}] Error saving Product (${products[i].id}) for ${site}:`.red
-          .bold,
-        error
-      );
-      response.errors.push(error);
-      return response;
-    }
   }
 
-  // Trigger List Synchronization
+  const concurrency = 5;
+  let index = 0;
+
+  while (index < products.data.length) {
+    const batch = products.data.slice(index, index + concurrency);
+    await Promise.all(
+      batch.map(async (product, i) => {
+        const idx = index + i + 1;
+        try {
+          console.log(`[${req_id}] (${idx}/${products.data.length}) Syncing:`.yellow.bold, product.id);
+          const saved = await synchronizeOneProduct(req_id, site, product.id);
+          if (saved) response.synchronized++;
+        } catch (err) {
+          console.error(`[${req_id}] Error saving product ${product.id}:`.red.bold, err);
+          response.errors.push({ product_id: product.id, error: err.message });
+        }
+      })
+    );
+    index += concurrency;
+  }
 
   return response;
 }
 
+/**
+ * Sync a single product by ID
+ */
 async function synchronizeOneProduct(req_id, site, product_id) {
-  let saved = false;
   const data = await retreiveOneProduct(req_id, site, product_id);
   const { id, title, status, variantsCount, tags, metafield } = data.product;
-  let record = {
+
+  const record = {
     product_id: id,
     title,
     status,
-    category: metafield ? metafield.value : null,
+    category: metafield?.value || null,
     variantsCount: variantsCount.count,
     unique_skus: [],
     tags,
     site,
     variants: [],
   };
-  const variantData = await retreiveProductVariants(
-    req_id,
-    site,
-    product_id,
-    record.variantsCount
-  );
-  const variants = variantData.product.variants.nodes;
-  let sku_set = new Set();
-  for (let i = 0; i < variants.length; i++) {
-    const { sku } = variants[i];
-    sku_set.add(sku);
-  }
-  record.variants = variants;
-  record.unique_skus = Array.from(sku_set);
-  try {
-    saved = await saveProductData(req_id, site, record);
-  } catch (error) {
-    console.error(error);
-  }
 
-  return saved;
+  const variantData = await retreiveProductVariants(req_id, site, product_id, record.variantsCount);
+  const variants = variantData.product.variants.nodes;
+  record.variants = variants;
+  record.unique_skus = [...new Set(variants.map(v => v.sku))];
+
+  return await saveProductData(req_id, site, record);
 }
 
-// filter.product_category
-// filter.flavor
+/**
+ * Retrieve paginated product data
+ */
 async function getAllProductData(req_id, site) {
-  console.log(`[${req_id}] Retreiving Product Data for:`.blue.bold, site);
-  let response = {
-    count: 0,
-    data: [],
-    errors: [],
-  };
+  console.log(`[${req_id}] Fetching Products for:`.blue.bold, site);
   const first = 100;
   let lastCursor = null;
-  let filter = `first: ${first}`;
+  let total = 0;
+  const data = [];
 
   while (true) {
-    if (lastCursor) {
-      filter = `first: ${first}, after: "${lastCursor}"`;
-    }
-    console.log(
-      `[${req_id}] Retreiving ${first} products (${response.count})`.yellow.bold
-    );
+    const filter = lastCursor ? `first: ${first}, after: "${lastCursor}"` : `first: ${first}`;
+    const res = await retreiveProducts(req_id, site, filter);
+    
+    const products = res.products.nodes;
+    const nodes = products.filter(p => p.status !== "ARCHIVED");
+    data.push(...nodes);
+    total += nodes.length;
+    lastCursor = res.products.pageInfo.endCursor;
 
-    const data = await retreiveProducts(req_id, site, filter);
-    const pageInfo = data.products.pageInfo;
-    const products = data.products.nodes;
-    lastCursor = pageInfo.endCursor;
-    for (let i = 0; i < products.length; i++) {
-      if (products[i].status === "ARCHIVED") {
-        continue;
-      }
-      response.data.push(products[i]);
-    }
+    console.log(`[${req_id}] Loaded ${total} products...`.cyan);
 
-    response.count += products.length;
-    if (products.length < first) {
-      break;
-    }
+    if (products.length < first) break;
   }
 
-  return response;
+  return { count: total, data };
 }
 
+/**
+ * Create or update product record in DB
+ */
 async function saveProductData(req_id, site, product) {
-  console.log(
-    `[${req_id}] Checking updates for Product:`.blue.bold,
-    product.product_id
-  );
+  if (product.status === "ARCHIVED") return false;
+
+  let existing = await productData.findOne({ product_id: product.product_id });
   let saved = false;
-  if (product.status === "ARCHIVED") {
-    console.log(`[${req_id}] Product Inactive - Skipping Update:`.yellow.bold);
-    return;
-  }
-  const existing = await productData.findOne({
-    product_id: product.product_id,
-  });
+
   if (!existing) {
-    console.log(`[${req_id}] Existing Product not found`.yellow);
-    try {
-      const newRecord = await productData.create(product);
-      console.log(
-        `[${req_id}] Product Created:`.green.bold,
-        newRecord.product_id
-      );
-      saved = true;
-    } catch (error) {
-      console.log(`[${req_id}] Error creating Product:`.red.bold, error);
-    }
-  } else {
-    let updates = 0;
-    // Check for updates
-    if (existing.title !== product.title) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "title");
-      existing.title = product.title;
+    const created = await productData.create(product);
+    console.log(`[${req_id}] Product created:`.green.bold, created.product_id);
+    return true;
+  }
+
+  let updates = 0;
+
+  const updateIfChanged = (field, newValue) => {
+    if (existing[field] !== newValue) {
+      existing[field] = newValue;
       updates++;
     }
-    if (existing.status !== product.status) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "status");
-      existing.status = product.status;
-      updates++;
-    }
-    if (existing.category !== product.category) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "category");
-      existing.category = product.category;
-      updates++;
-    }
-    if (existing.variantsCount !== product.variantsCount) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "variantsCount");
-      existing.variantsCount = product.variantsCount;
-      updates++;
-    }
-    if (existing.site !== product.site) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "site");
-      existing.site = product.site;
-      updates++;
-    }
-    const areArraysEqual = (arr1, arr2) => {
-      if (arr1.length !== arr2.length) return false;
-      return arr1.every((item, idx) => item === arr2[idx]);
-    };
+  };
 
-    if (!areArraysEqual(existing.unique_skus, product.unique_skus)) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "unique_skus");
-      existing.unique_skus = [...product.unique_skus];
-      updates++;
-    }
+  updateIfChanged("title", product.title);
+  updateIfChanged("status", product.status);
+  updateIfChanged("category", product.category);
+  updateIfChanged("variantsCount", product.variantsCount);
+  updateIfChanged("site", product.site);
 
-    if (!areArraysEqual(existing.tags, product.tags)) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "tags");
-      existing.tags = [...product.tags];
-      updates++;
-    }
+  const arraysMatch = (a, b) =>
+    Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => v === b[i]);
 
-    const compareVariantsByFields = (a, b, fields = ["id", "sku", "title"]) => {
-      if (a.length !== b.length) return false;
+  if (!arraysMatch(existing.unique_skus, product.unique_skus)) {
+    existing.unique_skus = [...product.unique_skus];
+    updates++;
+  }
 
-      for (let i = 0; i < a.length; i++) {
-        for (const field of fields) {
-          if (a[i][field] !== b[i][field]) {
-            return false;
-          }
-        }
-      }
+  if (!arraysMatch(existing.tags, product.tags)) {
+    existing.tags = [...product.tags];
+    updates++;
+  }
 
-      return true;
-    };
+  const variantsEqual = (a, b) =>
+    a.length === b.length &&
+    a.every((v, i) => ["id", "sku", "title"].every(key => v[key] === b[i]?.[key]));
 
-    if (!compareVariantsByFields(existing.variants, product.variants)) {
-      console.log(`[${req_id}] Update Detected:`.yellow, "variants");
-      existing.variants = product.variants.map((variant, i) => ({
-        ...variant,
-        _id: existing.variants[i]?._id || undefined, // Preserve _id if it exists
-      }));
-      updates++;
-    }
+  if (!variantsEqual(existing.variants, product.variants)) {
+    existing.variants = product.variants.map((v, i) => ({
+      ...v,
+      _id: existing.variants[i]?._id || undefined,
+    }));
+    updates++;
+  }
 
-    // Save record if Updated
-    if (updates > 0) {
-      console.log(`[${req_id}] Updates Found:`.blue, updates);
-
-      try {
-        const savedRecord = await existing.save();
-        console.log(
-          `[${req_id}] Product Updated:`.green.bold,
-          savedRecord.product_id
-        );
-        saved = true;
-      } catch (error) {
-        console.log(`[${req_id}] Error saving Product:`.red.bold, error);
-      }
-    } else {
-      console.log(`[${req_id}] No updates Found.`.yellow);
-    }
+  if (updates > 0) {
+    await existing.save();
+    console.log(`[${req_id}] Product updated:`.green.bold, product.product_id);
+    saved = true;
   }
 
   return saved;

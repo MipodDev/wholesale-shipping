@@ -1,0 +1,5 @@
+@import "tailwindcss";
+/* Use this class */
+.no-caret {
+  caret-color: transparent;
+}

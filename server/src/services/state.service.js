@@ -144,4 +144,31 @@ async function findRelatedZipCodes(req_id, stateCode) {
   return [];
 }
 
-module.exports = { synchronizeStates, synchronizeState };
+async function updateRulesForState(req_id, stateCode, appliedRuleNames) {
+  const state = await stateData.findOne({ code: stateCode });
+  if (!state) throw new Error(`State ${stateCode} not found`);
+
+  const allRules = await ruleData.find({ name: { $in: appliedRuleNames } });
+
+  for (const rule of allRules) {
+    const alreadyListed = rule.states.find((s) => s.code === state.code);
+    if (!alreadyListed) {
+      rule.states.push({ name: state.name, code: state.code });
+      await rule.save();
+      console.log(`[${req_id}] Added state ${stateCode} to rule "${rule.name}"`.green);
+    }
+  }
+
+  // Cleanup: remove state from rules no longer assigned
+  const rulesWithThisState = await ruleData.find({ "states.code": stateCode });
+  for (const rule of rulesWithThisState) {
+    if (!appliedRuleNames.includes(rule.name)) {
+      rule.states = rule.states.filter((s) => s.code !== stateCode);
+      await rule.save();
+      console.log(`[${req_id}] Removed state ${stateCode} from rule "${rule.name}"`.yellow);
+    }
+  }
+}
+
+
+module.exports = { synchronizeStates, synchronizeState, updateRulesForState };
