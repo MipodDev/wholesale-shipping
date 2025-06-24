@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { exportToCSV } from "../utils/exportToCSV";
 import { FiRefreshCw, FiDownload, FiRepeat } from "react-icons/fi";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const StateFilters = ({ states = [], setFilteredStates }) => {
   const [query, setQuery] = useState("");
@@ -9,17 +10,28 @@ const StateFilters = ({ states = [], setFilteredStates }) => {
   const [ruleFilter, setRuleFilter] = useState("");
   const [serviceFilter, setServiceFilter] = useState("");
 
-  const allRules = useMemo(() =>
-    Array.from(new Set(states.flatMap((s) => s?.rules?.map((r) => r.name) || [])))
-  , [states]);
+  const allRules = useMemo(
+    () =>
+      Array.from(
+        new Set(states.flatMap((s) => s?.rules?.map((r) => r.name) || []))
+      ),
+    [states]
+  );
 
-  const allServices = useMemo(() =>
-    Array.from(new Set(states.flatMap((s) => s?.services?.map((svc) => svc.name) || [])))
-  , [states]);
+  const allServices = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          states.flatMap((s) => s?.services?.map((svc) => svc.name) || [])
+        )
+      ),
+    [states]
+  );
 
-  const allStatuses = useMemo(() =>
-    Array.from(new Set(states.map((s) => s?.status).filter(Boolean)))
-  , [states]);
+  const allStatuses = useMemo(
+    () => Array.from(new Set(states.map((s) => s?.status).filter(Boolean))),
+    [states]
+  );
 
   const applyFilters = () => {
     let result = [...states];
@@ -27,7 +39,8 @@ const StateFilters = ({ states = [], setFilteredStates }) => {
     if (query) {
       const q = query.toLowerCase();
       result = result.filter(
-        (s) => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
+        (s) =>
+          s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q)
       );
     }
 
@@ -62,16 +75,15 @@ const StateFilters = ({ states = [], setFilteredStates }) => {
     setFilteredStates(states);
   };
 
-const handleSynchronize = async () => {
-  try {
-    const res = await axios.post("/api/states/synchronize/B2B");
-    alert(res.data.message || "Synchronization started!");
-  } catch (err) {
-    console.error("Synchronization failed:", err);
-    alert("Failed to initiate synchronization.");
-  }
-};
-
+  const handleSynchronize = async () => {
+    try {
+      const res = await axios.post("/api/states/synchronize");
+      toast.success(res.data.message || "Rules Synchronized!");
+    } catch (err) {
+      toast.error("Synchronization failed:", err);
+      alert("Failed to initiate synchronization.");
+    }
+  };
 
   return (
     <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 mb-4 shadow-sm">
@@ -91,7 +103,9 @@ const handleSynchronize = async () => {
         >
           <option value="">All Statuses</option>
           {allStatuses.map((status) => (
-            <option key={status} value={status}>{status}</option>
+            <option key={status} value={status}>
+              {status}
+            </option>
           ))}
         </select>
 
@@ -102,7 +116,9 @@ const handleSynchronize = async () => {
         >
           <option value="">All Rules</option>
           {allRules.map((rule) => (
-            <option key={rule} value={rule}>{rule}</option>
+            <option key={rule} value={rule}>
+              {rule}
+            </option>
           ))}
         </select>
 
@@ -113,7 +129,9 @@ const handleSynchronize = async () => {
         >
           <option value="">All Services</option>
           {allServices.map((svc) => (
-            <option key={svc} value={svc}>{svc}</option>
+            <option key={svc} value={svc}>
+              {svc}
+            </option>
           ))}
         </select>
 

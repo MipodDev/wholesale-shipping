@@ -25,7 +25,7 @@ app.use("/api/rates", ratesRoute);
 app.use("/api/customers", customersRoute);
 app.use("/api/install", installationRoute);
 app.use("/api/lists", listRoute);
-app.use("/api/rules", ruleRoute);
+app.use("/web/rules", ruleRoute);
 app.use("/web", webRoute);
 app.use("/api/products", productsRoute);
 app.use("/api/states", stateRoute);

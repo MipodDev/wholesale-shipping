@@ -6,6 +6,7 @@ const Service = require("../models/service.model");
 const Product = require("../models/product.model");
 const Customer = require("../models/customer.model");
 const List = require("../models/list.model");
+const { updateRulesForState } = require("../services/state.service");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -49,6 +50,34 @@ router.get("/states/:stateCode", async (req, res) => {
     res.status(200).send(state);
   } catch (err) {
     res.status(500).send({ message: "Error loading state", err });
+  }
+});
+router.put("/states/:stateCode", async (req, res) => {
+  const stateCode = req.params.stateCode.toUpperCase();
+  const { status, rules = [] } = req.body;
+
+  if (!["enabled", "disabled"].includes(status)) {
+    return res.status(400).json({ message: "Invalid status" });
+  }
+
+  try {
+    const ruleDocs = await Rule.find({ name: { $in: rules } });
+
+    const updated = await State.findOneAndUpdate(
+      { code: stateCode },
+      { $set: { status, rules: ruleDocs } },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ message: "State not found" });
+
+    const req_id = `UI-${Date.now()}`;
+    await updateRulesForState(req_id, stateCode, rules);
+
+    res.status(200).json({ message: "State updated", state: updated });
+  } catch (err) {
+    console.error("Update failed:", err);
+    res.status(500).json({ message: "Failed to update state", error: err });
   }
 });
 
@@ -96,6 +125,64 @@ router.get("/rules/:id", async (req, res) => {
     res.status(200).send(rule);
   } catch (err) {
     res.status(500).send({ message: "Error loading rule", err });
+  }
+});
+
+
+// CREATE Rule
+router.post("/rules", async (req, res) => {
+  const { name, range, type, lists = [] } = req.body;
+
+  if (!name || !range || !type) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+    const listDocs = await List.find({ id: { $in: lists.map((l) => l.id) } });
+    const newRule = new Rule({
+      id: uuidv4(),
+      name,
+      range,
+      type,
+      lists: listDocs,
+    });
+
+    await newRule.save();
+    res.status(201).json({ message: "Rule created", rule: newRule });
+  } catch (err) {
+    console.error("Error creating rule:", err);
+    res.status(500).json({ message: "Failed to create rule", error: err });
+  }
+});
+
+// UPDATE Rule
+router.put("/rules/:rule_id", async (req, res) => {
+  const rule_id = req.params.rule_id;
+  const { name, range, type, lists = [] } = req.body;
+
+  try {
+    const listDocs = await List.find({ id: { $in: lists.map((l) => l.id) } });
+    const updated = await Rule.findOneAndUpdate(
+      { id: rule_id },
+      {
+        $set: {
+          name,
+          range,
+          type,
+          lists: listDocs,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: "Rule not found" });
+    }
+
+    res.status(200).json({ message: "Rule updated", rule: updated });
+  } catch (err) {
+    console.error("Error updating rule:", err);
+    res.status(500).json({ message: "Failed to update rule", error: err });
   }
 });
 
@@ -161,6 +248,7 @@ router.get("/services/:id", async (req, res) => {
 });
 
 // GET /web/products
+
 router.get("/products", async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 25;
@@ -374,7 +462,9 @@ router.post("/lists", async (req, res) => {
     });
 
     await newList.save();
-    res.status(201).json({ message: "List created successfully", list: newList });
+    res
+      .status(201)
+      .json({ message: "List created successfully", list: newList });
   } catch (err) {
     console.error("Error creating list:", err);
     res.status(500).json({ message: "Failed to create list", error: err });
@@ -412,6 +502,5 @@ router.put("/lists/:list_id", async (req, res) => {
     res.status(500).json({ message: "Failed to update list", error: err });
   }
 });
-
 
 module.exports = router;

@@ -1,88 +1,71 @@
-// components/RulesTable.jsx
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-const RulesTable = ({ rules = [], onView }) => {
-  if (!Array.isArray(rules)) return null;
-
+export default function RulesTable({ rules, onViewRule }) {
   return (
-    <div className="overflow-x-auto rounded-xl shadow border border-zinc-700 bg-zinc-900">
-      <table className="min-w-full table-auto divide-y divide-zinc-700 text-sm text-zinc-100">
-        <thead className="bg-zinc-800 text-zinc-300">
+    <div className="mt-4 overflow-auto rounded-lg border border-zinc-700">
+      <table className="min-w-full text-sm text-left text-gray-300">
+        <thead className="bg-zinc-900 text-xs uppercase text-gray-400 sticky top-0 z-10">
           <tr>
-            <th className="p-3 text-left font-medium">Name</th>
-            <th className="p-3 text-left font-medium">Range</th>
-            <th className="p-3 text-left font-medium">Type</th>
-            <th className="p-3 text-left font-medium">States</th>
-            <th className="p-3 text-left font-medium">Cities</th>
-            <th className="p-3 text-left font-medium">Zip Codes</th>
-            <th className="p-3 text-left font-medium">Product Lists</th>
-            <th className="p-3 text-left font-medium">SKUs</th>
-            <th className="p-3 text-left font-medium"></th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider">
+              Name
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider">
+              Type
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider">
+              Range
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider">
+              # of Lists
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider">
+              # of States
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider">
+              # of SKUs
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium tracking-wider text-right">
+              Actions
+            </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-800">
-          <AnimatePresence>
-            {rules.map((r) => (
-              <motion.tr
-                key={r.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="hover:bg-zinc-800/70"
-              >
-                <td className="p-3">{r.name}</td>
-                <td className="p-3 capitalize">{r.range}</td>
-                <td className="p-3">
-                  {r.type === "Registry" && (
-                    <span className="text-yellow-400">⚠️ Registry</span>
-                  )}
-                  {r.type === "Ban" && (
-                    <span className="text-red-400">❌ Ban</span>
-                  )}
-                  {r.type === "Exemption" && (
-                    <span className="text-green-400">✅ Exemption</span>
-                  )}
-                </td>
-                <td className="p-3">
-                  {r.states?.map((s) => (
-                    <span
-                      key={s.code}
-                      className="inline-block bg-zinc-800 text-zinc-300 border border-zinc-600 rounded px-2 py-0.5 text-xs mr-1"
-                    >
-                      {s.name} ({s.code})
-                    </span>
-                  ))}
-                </td>
-                <td className="p-3">{r.cities?.length || 0}</td>
-                <td className="p-3">{r.zipCodes?.length || 0}</td>
-                <td className="p-3">
-                  {r.lists?.map((list) => (
-                    <span
-                      key={list.id}
-                      className="inline-block bg-purple-900/60 text-purple-300 border border-purple-800 rounded px-2 py-0.5 text-xs mr-1"
-                    >
-                      {list.name}
-                    </span>
-                  ))}
-                </td>
-                <td className="p-3">{r.skus?.length || 0}</td>
-                <td className="p-3">
-                  <button
-                    onClick={() => onView(r.id)}
-                    className="text-blue-400 hover:text-blue-300 transition"
-                  >
-                    View
-                  </button>
-                </td>
-              </motion.tr>
-            ))}
-          </AnimatePresence>
+        <tbody className="divide-y divide-zinc-800 bg-zinc-800">
+          {rules.map((rule, index) => (
+            <motion.tr
+              key={rule.id}
+              className={`transition-colors hover:bg-zinc-700 ${
+                index % 2 === 0 ? "bg-zinc-800" : "bg-zinc-900"
+              }`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <td className="px-4 py-3 font-medium text-white">{rule.name}</td>
+              <td className="px-4 py-3">
+                <span className="bg-purple-700 text-white text-xs px-2 py-1 rounded-full">
+                  {rule.type}
+                </span>
+              </td>
+              <td className="px-4 py-3">
+                <span className="bg-blue-700 text-white text-xs px-2 py-1 rounded-full">
+                  {rule.range}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-center">{rule.lists?.length || 0}</td>
+              <td className="px-4 py-3 text-center">{rule.states?.length || 0}</td>
+              <td className="px-4 py-3 text-center">{rule.skus?.length || 0}</td>
+              <td className="px-4 py-3 text-right">
+                <button
+                  onClick={() => onViewRule(rule.id)}
+                  className="text-indigo-400 hover:text-indigo-200 text-sm font-medium"
+                >
+                  View
+                </button>
+              </td>
+            </motion.tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
-};
-
-export default RulesTable;
+}
