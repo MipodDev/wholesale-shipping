@@ -1,24 +1,26 @@
 const mongoose = require("mongoose");
 
-const addressSchema = new mongoose.Schema({
+const originSchema = new mongoose.Schema({
   country: String,
   postal_code: String,
   province: String,
   city: String,
-  name: String,
   address1: String,
   address2: String,
-  address3: String,
-  latitude: Number,
-  longitude: Number,
-  phone: String,
-  fax: String,
-  email: String,
-  address_type: String,
   company_name: String,
-});
+}, { _id: false });
 
-const itemSchema = new mongoose.Schema({
+const destinationSchema = new mongoose.Schema({
+  country: String,
+  postal_code: String,
+  province: String,
+  city: String,
+  address1: String,
+  address2: String,
+  phone: String,
+}, { _id: false });
+
+const itemsSchema = new mongoose.Schema({
   name: String,
   sku: String,
   quantity: Number,
@@ -30,48 +32,46 @@ const itemSchema = new mongoose.Schema({
   fulfillment_service: String,
   product_id: Number,
   variant_id: Number,
-});
+}, { _id: false });
 
-const rateSchema = new mongoose.Schema({
-  name: {
-    type: String,
-  },
-  price: {
-    type: String,
-  },
-});
+const ratesSchema = new mongoose.Schema({
+  service_name: String,
+  service_code: String,
+  total_price: String,
+  currency: String,
+}, { _id: false });
 
-const ruleSchema = new mongoose.Schema({
-  name: {
-    type: String,
-  },
-  type: {
-    type: String,
-  },
-});
+const rulesSchema = new mongoose.Schema({
+  id: String,
+  name: String,
+  range: String,
+  type: String,
+}, { _id: false });
 
-const RequestLogSchema = new mongoose.Schema(
-  {
-    req_id: {
-      type: String,
-    },
-    site: {
-      type: String,
-    },
-    request: {
-      origin: addressSchema,
-      destination: addressSchema,
-      items: [itemSchema],
-      currency: String,
-      locale: String,
-    },
-    response: {
-      rates: [rateSchema],
-      rulesApplied: [ruleSchema],
-    },
+const approvalSchema = new mongoose.Schema({
+  allow: Boolean,
+  exempt: Boolean,
+  reason: {
+    type: String,
+    default: "None"
   },
-  { timestamps: true }
-);
+}, { _id: false });
+
+const RequestLogSchema = new mongoose.Schema({
+  req_id: String,
+  site: String,
+  type: String,
+  request: {
+    origin: originSchema,
+    destination: destinationSchema,
+    items: [itemsSchema],
+    currency: String,
+    locale: String,
+  },
+  rates: [ratesSchema],
+  rules: [rulesSchema],
+  approval: approvalSchema,
+}, { timestamps: true });
 
 const RequestLog = mongoose.model("RequestLog", RequestLogSchema);
 

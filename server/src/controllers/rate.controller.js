@@ -25,10 +25,11 @@ async function getRates(req_id, site, rate_request) {
   if (!state || state.status !== "enabled") {
     console.log(`[${req_id}] State Status:`.red, state?.status || "unknown");
     rules.push({
-      type: "State Status",
+      name: "State Disabled",
       range: "State",
+      type: "State Status"
     });
-    return [];
+    return { rates, rules, approval: {allow: false, exempt: false, reason: `State is disabled: ${rate_request.destination.province}`} };
   } else {
     console.log(`[${req_id}] State Status:`.green, state.status);
     if (state.rules.length > 0) {
@@ -56,6 +57,7 @@ async function getRates(req_id, site, rate_request) {
     cart_detail,
     approval
   );
+
   console.log(
     `[${req_id}] Available Services for Zone:`.green,
     services.length
@@ -63,7 +65,8 @@ async function getRates(req_id, site, rate_request) {
 
   rates = await composeRates(req_id, site, rate_request, services);
 
-  return rates;
+
+  return { rates, rules, approval };
 }
 
 async function getApproval(req_id, site, rules, state, cart_detail) {
@@ -75,7 +78,7 @@ async function getApproval(req_id, site, rules, state, cart_detail) {
   console.log(`[${req_id}] Trying approval...`.blue.bold);
   console.log(`[${req_id}] Rules to process:`.blue, rules.length);
   for (let i = 0; i < rules.length; i++) {
-    if(!approval.allow){
+    if (!approval.allow) {
       continue;
     }
     let targeted_area = false;
@@ -206,6 +209,11 @@ async function getCustomerDetail(req_id, site, rate_request) {
       site,
       phone: { $regex: `${normalizedPhone}$` }, // Ends with normalized phone
     });
+
+    if (!data) {
+      return customer;
+    }
+
     customer.id = data.id;
     customer.email = data.email;
     customer.phone = data.phone;
