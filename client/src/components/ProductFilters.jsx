@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Select from "react-select";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const ProductFilters = ({ filters, setFilters, pagination, setPagination }) => {
   const [options, setOptions] = useState({
@@ -25,6 +26,8 @@ const ProductFilters = ({ filters, setFilters, pagination, setPagination }) => {
         setOptions(res.data);
       } catch (err) {
         console.error("Failed loading filter options", err);
+              toast.error("Failed loading filter options.");
+
       }
     };
     fetchOptions();
@@ -177,10 +180,10 @@ const ProductFilters = ({ filters, setFilters, pagination, setPagination }) => {
             onClick={async () => {
               try {
                 const res = await axios.post("/api/products/synchronize/B2B");
-                alert(res.data.message); // Or use a toast if you prefer
+                toast.success(res.data.message); // Or use a toast if you prefer
               } catch (err) {
                 console.error("Synchronization failed", err);
-                alert("Failed to synchronize products.");
+                toast.error("Failed to synchronize products.");
               }
             }}
             className="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-md"

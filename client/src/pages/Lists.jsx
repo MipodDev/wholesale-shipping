@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ListModal from "../components/ListModal";
 import ListTable from "../components/ListTable";
+import { toast } from "react-toastify";
 
 const Lists = () => {
   const [lists, setLists] = useState([]);
@@ -14,6 +15,8 @@ const Lists = () => {
   };
   const handleSyncOne = async (id) => {
     await axios.post(`/api/lists/synchronize/${id}`);
+    toast.success("Synchronized List!");
+
     fetchLists();
   };
 
@@ -35,8 +38,10 @@ const Lists = () => {
   const handleSave = async (updatedList, isNew) => {
     if (isNew) {
       await axios.post("/web/lists", updatedList);
+      toast.success("List created!");
     } else {
       await axios.put(`/web/lists/${updatedList.id}`, updatedList);
+      toast.success("Changes saved!");
     }
 
     // Sync after save
@@ -47,12 +52,15 @@ const Lists = () => {
 
   const handleDelete = async (id) => {
     await axios.delete(`/api/lists/${id}`);
+    toast.success("Deleted List!");
+
     fetchLists();
     handleCloseModal();
   };
 
   const handleSyncAll = async () => {
     await axios.post("/api/lists/synchronize");
+    toast.success("All Lists synchronized!");
     fetchLists();
   };
 
