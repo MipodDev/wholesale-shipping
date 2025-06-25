@@ -66,7 +66,7 @@ async function getRates(req_id, site, rate_request) {
   rates = await composeRates(req_id, site, rate_request, services);
 
 
-  return { rates, rules, approval };
+  return { rates, rules, approval, customer };
 }
 
 async function getApproval(req_id, site, rules, state, cart_detail) {

@@ -67,20 +67,7 @@ async function synchronizeState(req_id, stateCode) {
     return result;
   }
 
-  //   Add to State.zipCodes
-  const xZipCodes = state.zipCodes;
-  try {
-    state.zipCodes = await findRelatedZipCodes(req_id, stateCode);
-    if (xZipCodes !== state.zipCodes) {
-      console.log(`Zip Codes Updated!`.green.bold);
-      result.changes.push("Zip Codes Updated");
-    }
-  } catch (error) {
-    result.errors.push(error);
-    result.status = "Failed";
-    console.error(error);
-    return result;
-  }
+
 
   if (result.changes.length > 0) {
     try {
@@ -140,9 +127,6 @@ async function findRelatedServices(req_id, stateCode) {
   return services;
 }
 
-async function findRelatedZipCodes(req_id, stateCode) {
-  return [];
-}
 
 async function updateRulesForState(req_id, stateCode, appliedRuleNames) {
   const state = await stateData.findOne({ code: stateCode });
