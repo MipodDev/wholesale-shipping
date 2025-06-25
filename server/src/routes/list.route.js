@@ -13,6 +13,7 @@ const {
   getListById,
   getAllLists,
 } = require("../controllers/list.controller");
+const { updateLog } = require("../services/sync.service");
 
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
@@ -72,8 +73,12 @@ router.post("/synchronize", async (req, res) => {
   const req_id = uuidv4();
   try {
     const response = await synchronizeLists(req_id);
+    await updateLog({ table: "Product Lists", status: "Success" });
+
     res.status(200).send(response);
   } catch (error) {
+    await updateLog({ table: "Product Lists", status: "Failed" });
+
     res.status(405).send(error);
   }
 });
@@ -89,11 +94,10 @@ router.post("/synchronize/:id", async (req, res) => {
     } else {
       message = "No changes were made";
     }
-    res.status(200).send({message});
+    res.status(200).send({ message });
   } catch (error) {
     res.status(405).send(error);
   }
 });
-
 
 module.exports = router;
