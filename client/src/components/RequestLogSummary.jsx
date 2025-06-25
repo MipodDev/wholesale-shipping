@@ -57,7 +57,7 @@ export default function RequestLogSummary() {
       </div>
 
       {/* Last 10 Table */}
-      <div className="mt-6">
+      <div className="mb-6">
         <h3 className="font-semibold mb-2">Last 10 Requests</h3>
         <table className="w-full text-sm border border-zinc-600">
           <thead className="bg-zinc-700">
