@@ -16,6 +16,7 @@ const ruleRoute = require("./src/routes/rule.route");
 const stateRoute = require("./src/routes/state.route");
 const productsRoute = require("./src/routes/products.route");
 const webRoute = require("./src/routes/web.route");
+const zipCodeRoute = require("./src/routes/zipCode.route");
 
 // JSON parsing
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use("/web/rules", ruleRoute);
 app.use("/web", webRoute);
 app.use("/api/products", productsRoute);
 app.use("/api/states", stateRoute);
+app.use("/api/zipcode", zipCodeRoute);
 
 // Add /test route BEFORE the fallback
 app.get("/test", async (req, res) => {

@@ -4,18 +4,15 @@ const Schema = mongoose.Schema;
 
 const ZipCodeSchema = new Schema(
   {
-    stateCode: {
-      type: String,
-      required: true,
-    },
-    code: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    county: {
-      type: String,
-    },
+    code: { type: String, unique: true },
+    city: { type: String },
+    country: { type: String },
+    county: { type: String },
+    timezone: { type: String },
+    stateCode: { type: String },
+    state: { type: String },
+    agent: { type: String },
+    service: { type: String },
   },
   { timestamps: true }
 );
