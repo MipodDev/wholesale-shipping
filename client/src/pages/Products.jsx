@@ -6,6 +6,7 @@ import ProductTable from "../components/ProductTable";
 import ProductModal from "../components/ProductModal";
 import { saveAs } from "file-saver";
 import Papa from "papaparse";
+import { toast } from "react-toastify";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -33,6 +34,8 @@ const ProductsPage = () => {
       }
     } catch (err) {
       console.error("Failed to load products:", err);
+      toast.error("Failed to load products.");
+
     } finally {
       setLoadingProducts(false);
     }
@@ -46,6 +49,8 @@ const ProductsPage = () => {
       setSummary(res.data);
     } catch (err) {
       console.error("Failed to load summary:", err);
+        toast.error("Failed to load summary.");
+
     } finally {
       setLoadingSummary(false);
     }

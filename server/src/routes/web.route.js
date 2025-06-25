@@ -7,6 +7,8 @@ const Product = require("../models/product.model");
 const Customer = require("../models/customer.model");
 const List = require("../models/list.model");
 const { updateRulesForState } = require("../services/state.service");
+const Sync = require("../models/sync.model");
+const RequestLog = require("../models/requestLoq.model"); // Ensure the correct path
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -127,7 +129,6 @@ router.get("/rules/:id", async (req, res) => {
     res.status(500).send({ message: "Error loading rule", err });
   }
 });
-
 
 // CREATE Rule
 router.post("/rules", async (req, res) => {
@@ -500,6 +501,79 @@ router.put("/lists/:list_id", async (req, res) => {
   } catch (err) {
     console.error("Error updating list:", err);
     res.status(500).json({ message: "Failed to update list", error: err });
+  }
+});
+
+router.get("/summary/sync", async (req, res) => {
+  const syncSummary = await Sync.find();
+  res.status(200).send(syncSummary);
+});
+
+router.get("/summary/logs", async (req, res) => {
+  try {
+    const now = new Date();
+    const getSince = (days) => new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+
+    const [last10, count24h, count7d, count30d, denied24h, logsForChart] = await Promise.all([
+      RequestLog.find().sort({ createdAt: -1 }).limit(10),
+      RequestLog.countDocuments({ createdAt: { $gte: getSince(1) } }),
+      RequestLog.countDocuments({ createdAt: { $gte: getSince(7) } }),
+      RequestLog.countDocuments({ createdAt: { $gte: getSince(30) } }),
+      RequestLog.countDocuments({
+        createdAt: { $gte: getSince(1) },
+        "approval.allow": false,
+      }),
+      RequestLog.find({ createdAt: { $gte: getSince(30) } }, "approval rules"),
+    ]);
+
+    const chart = {
+      approved_with_rules: 0,
+      approved_no_rules: 0,
+      denied_with_rules: 0,
+      denied_no_rules: 0,
+    };
+
+    logsForChart.forEach((log) => {
+      const approved = log.approval?.allow;
+      const hasRules = log.rules && log.rules.length > 0;
+
+      if (approved && hasRules) chart.approved_with_rules++;
+      else if (approved && !hasRules) chart.approved_no_rules++;
+      else if (!approved && hasRules) chart.denied_with_rules++;
+      else chart.denied_no_rules++;
+    });
+
+    const last10Simplified = last10.map((log) => ({
+      _id: log._id,
+      site: log.site,
+      type: log.type,
+      approval: log.approval,
+      rules: log.rules,
+      createdAt: log.createdAt,
+    }));
+
+    res.json({
+      last10: last10Simplified,
+      count24h,
+      count7d,
+      count30d,
+      denied24h,
+      chart,
+    });
+  } catch (err) {
+    console.error("Failed to get log summary:", err);
+    res.status(500).json({ error: "Failed to get log summary" });
+  }
+});
+
+router.get("/summary/logs/:id", async (req, res) => {
+  try {
+    const log = await RequestLog.findById(req.params.id);
+    if (!log) return res.status(404).json({ message: "Request log not found" });
+    res.json(log);
+  } catch (err) {
+    console.error("Error fetching log:", err);
+    res.status(500).json({ message: "Failed to fetch request log", error: err });
   }
 });
 

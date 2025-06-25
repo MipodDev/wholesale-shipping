@@ -13,13 +13,18 @@ const {
   deleteService,
 } = require("../controllers/carrierService.controller.js");
 const { v4: uuidv4 } = require("uuid");
+const { updateLog } = require("../services/sync.service");
 
 router.post("/synchronize", async (req, res) => {
   const req_id = uuidv4();
   try {
     const response = await synchronizeAllServices(req_id);
+    await updateLog({ table: "Services", status: "Success" });
+
     res.status(200).send(response);
   } catch (error) {
+    await updateLog({ table: "Services", status: "Failed" });
+
     res.status(405).send(error);
   }
 });

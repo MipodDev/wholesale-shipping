@@ -1,5 +1,5 @@
 ###
-POST http://localhost:3000/api/rates/SBX
+POST http://localhost:3000/api/rates/test/SBX
 Content-Type: application/json
 
 {
@@ -24,7 +24,7 @@ Content-Type: application/json
     "destination": {
       "country": "US",
       "postal_code": "85008",
-      "province": "WI",
+      "province": "AZ",
       "city": "Phoenix",
       "name": "Dylan Walters",
       "address1": "4908 East McDowell Road",
@@ -40,11 +40,11 @@ Content-Type: application/json
     },
     "items": [
   {
-    "name": "Aloe Grape Orion Bar 7500 - Wholesale A / 50mg / 10 Pack",
-    "sku": "58213-5",
-    "quantity": 9,
+    "name": "Kratom Test",
+    "sku": "59172",
+    "quantity": 1,
     "grams": 850,
-    "price": 8000,
+    "price": 35000,
     "vendor": "Lost Vape",
     "requires_shipping": true,
     "taxable": true,
@@ -262,6 +262,21 @@ Content-Type: application/json
 ###
 
 GET http://localhost:3000/web/customers
+Content-Type: application/json
+
+
+
+###
+#
+# Zip Codes
+#
+###
+POST http://localhost:3000/api/zipcode/load
+Content-Type: application/json
+
+
+###
+POST http://localhost:3000/api/zipcode/aggregate
 Content-Type: application/json
 
 

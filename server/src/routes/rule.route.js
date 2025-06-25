@@ -13,6 +13,7 @@ const {
   synchronizeAllRules,
   synchronizeOneRule,
 } = require("../services/rule.service");
+const { updateLog } = require("../services/sync.service");
 
 router.get("/", async (req, res) => {
   const req_id = uuidv4();
@@ -74,8 +75,12 @@ router.post("/synchronize", async (req, res) => {
   const req_id = uuidv4();
   try {
     const response = await synchronizeAllRules(req_id);
+    await updateLog({ table: "Rules", status: "Success" });
+
     res.status(200).send(response);
   } catch (error) {
+    await updateLog({ table: "Rules", status: "Failed" });
+
     res.status(405).send(error);
   }
 });
@@ -91,7 +96,7 @@ router.post("/synchronize/:id", async (req, res) => {
     } else {
       message = "No changes were made";
     }
-    res.status(200).send({message});
+    res.status(200).send({ message });
   } catch (error) {
     res.status(405).send(error);
   }

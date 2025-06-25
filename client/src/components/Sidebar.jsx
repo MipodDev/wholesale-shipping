@@ -10,7 +10,8 @@ import {
   FiGlobe,
   FiTable  ,
   FiChevronRight,
-  FiCrosshair
+  FiCrosshair,
+  FiBookOpen 
 } from "react-icons/fi";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import SignInSignOutButton from "./SignInSignOutButton";
@@ -55,6 +56,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <div className=" flex-1 pt-16 px-2 space-y-1">
           {navItem("/", <FiHome />, "Home")}
 
+          {isAuthenticated && (
+           <> {navItem("/dashboard", <FiBookOpen  />, "Dashboard")}</>
+          )}
+
+          
           {/* Shipping */}
           {isAuthenticated && (
             <button

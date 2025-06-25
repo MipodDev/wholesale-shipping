@@ -12,6 +12,7 @@ const {
   synchronizeState,
 } = require("../services/state.service");
 const { v4: uuidv4 } = require("uuid");
+const { updateLog } = require("../services/sync.service");
 
 // Get All States
 router.get("/", async (req, res) => {
@@ -79,8 +80,12 @@ router.post("/synchronize", async (req, res) => {
   const req_id = uuidv4();
   try {
     const response = await synchronizeStates(req_id);
+    await updateLog({ table: "States", status: "Success" });
+
     res.status(200).send(response);
   } catch (error) {
+    await updateLog({ table: "States", status: "Failed" });
+
     res.status(405).send(error);
   }
 });
