@@ -198,11 +198,16 @@ async function getCustomerDetail(req_id, site, rate_request) {
     site: null,
   };
   const destination = rate_request.destination;
+  console.log(rate_request);
+  if(!rate_request.destination.phone){
+    return customer;
+  }
   const normalizedPhone = destination.phone?.replace(/\D/g, ""); // Strip all non-numeric chars, e.g., "(480) 252-4808" -> "4802524808"
   console.log(
     `[${req_id}] Searching for Customer Record:`.blue,
     normalizedPhone
   );
+
 
   try {
     let data = await CustomerData.findOne({
@@ -216,7 +221,7 @@ async function getCustomerDetail(req_id, site, rate_request) {
 
     customer.id = data.id;
     customer.email = data.email;
-    customer.phone = data.phone;
+    customer.phone = data?.phone;
     customer.rules = data.rules;
     customer.site = data.site;
 
@@ -358,7 +363,7 @@ async function getCartDetails(req_id, site, rate_request) {
     // console.log(`[${req_id}] (${sku}) ${name}`.blue);
     // const cash_line_total = (line_total / 100).toFixed(2);
     // console.log(`[${req_id}] ${quantity} * ${price} = $${cash_line_total}`.blue);
-    order_total = +line_total;
+    order_total += line_total;
     item_set.add(sku);
   }
   const unique_items = Array.from(item_set);
